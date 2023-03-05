@@ -11,12 +11,13 @@ int main()
 
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(-1.0, 1.0);
+    std::uniform_real_distribution<double> randPosition(-1.0, 1.0);
+    std::uniform_real_distribution<double> randVelocity(-0.001, 0.001);
 
     std::vector<Boid> boids;
 
     for (int i = 0; i < 50; ++i) {
-        Boid boid(glm::vec2(dist(mt), dist(mt)), glm::vec2(0.001, -0.0005));
+        Boid boid(glm::vec2(randPosition(mt), randPosition(mt)), glm::vec2(randVelocity(mt), randVelocity(mt)));
         boids.push_back(boid);
     }
 
