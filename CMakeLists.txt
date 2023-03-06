@@ -53,3 +53,4 @@ add_exercise(TP3_exo3_quad)
 
 
 add_exercise(Project)
+add_exercise(Project_ground)
