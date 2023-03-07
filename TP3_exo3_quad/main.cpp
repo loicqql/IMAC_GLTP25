@@ -23,25 +23,36 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     Vertex2DColor vertices[] = { 
-        Vertex2DColor{{-0.5f, -0.5f}, {1.f, 0.f, 0.f}},
-        Vertex2DColor{{ 0.5f, -0.5f}, {0.f, 1.f, 0.f}},
-        Vertex2DColor{{-0.5f,  0.5f}, {0.f, 0.f, 1.f}},
-        //
-        Vertex2DColor{{-0.5f,  0.5f}, {0.f, 0.f, 1.f}},
-        Vertex2DColor{{0.5f,  0.5f}, {0.f, 0.f, 1.f}},
-        Vertex2DColor{{0.5f,  -0.5f}, {0.f, 0.f, 1.f}},
+        Vertex2DColor{{-0.5f, -0.5f}, {1.f, 0.f, 0.f}}, // Sommet 0
+        Vertex2DColor{{+0.5f, -0.5f}, {0.f, 1.f, 0.f}}, // Sommet 1
+        Vertex2DColor{{+0.5f, +0.5f}, {0.f, 0.f, 1.f}}, // Sommet 2
+        Vertex2DColor{{-0.5f, +0.5f}, {1.f, 1.f, 1.f}}, // Sommet 3
     };
 
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(Vertex2DColor), vertices, GL_STATIC_DRAW); 
+    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex2DColor), vertices, GL_STATIC_DRAW); 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+    uint32_t indices[] = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     //vao
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao); 
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo); 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); 
 
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(8);   
@@ -70,7 +81,7 @@ int main()
 
         shader.use();
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
