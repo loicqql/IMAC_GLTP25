@@ -7,6 +7,8 @@
 
 # include "PerlinNoise.hpp"
 
+//https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
+
 int main()
 {
     auto ctx = p6::Context{{1280, 720, "Project Ground"}};
@@ -96,8 +98,8 @@ int main()
     glBindVertexArray(0);
 
     const p6::Shader shader = p6::load_shader(
-        "shaders/sh.vs.glsl",
-        "shaders/sh.fs.glsl"
+        "shaders/camera.vs.glsl",
+        "shaders/camera.fs.glsl"
     );
 
     // Declare your infinite update loop.
