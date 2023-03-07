@@ -42,6 +42,13 @@ int main()
 
     std::vector<Vertex3D> vertices;
 
+    // std::vector<uint32_t> indices = {
+    //     0, 1, 2,
+    //     1, 2, 3
+    // };
+
+    std::vector<uint32_t> indices;
+
     // std::vector<Vertex3D> vertices = { 
     //     Vertex3D{{-0.5f, -0.5f, -0.0f}},
     //     Vertex3D{{ 0.5f, -0.5f, -0.0f}},
@@ -56,15 +63,31 @@ int main()
     const siv::PerlinNoise::seed_type seed = 123456u;
 	const siv::PerlinNoise perlin{ seed };
 
+    uint32_t indice = 0;
+
     for(float i = -1.0; i < 1; i += 1.0/(float)width){
         for(float j = -1.0; j < 1; j += 1.0/(float)height){
             
             vertices.push_back(Vertex3D{{i, j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
             vertices.push_back(Vertex3D{{i, j, (float)perlin.noise2D(i, j)}});
             vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
-            vertices.push_back(Vertex3D{{i, j, (float)perlin.noise2D(i, j)}});
-            vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
             vertices.push_back(Vertex3D{{i + 1.0/(float)width, j, (float)perlin.noise2D(i + 1.0/(float)width, j)}});
+
+            indices.push_back(indice);
+            indices.push_back(indice + 1);
+            indices.push_back(indice + 2);
+            indices.push_back(indice + 1);
+            indices.push_back(indice + 2);
+            indices.push_back(indice + 3);
+
+            indice += 4;
+
+            // vertices.push_back(Vertex3D{{i, j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
+            // vertices.push_back(Vertex3D{{i, j, (float)perlin.noise2D(i, j)}});
+            // vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
+            // vertices.push_back(Vertex3D{{i, j, (float)perlin.noise2D(i, j)}});
+            // vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
+            // vertices.push_back(Vertex3D{{i + 1.0/(float)width, j, (float)perlin.noise2D(i + 1.0/(float)width, j)}});
         }
     }
 
@@ -80,12 +103,21 @@ int main()
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    GLuint ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), &indices.front(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
     //vao
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao); 
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo); 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); 
 
     glEnableVertexAttribArray(0);
     // glEnableVertexAttribArray(8);   
@@ -130,9 +162,8 @@ int main()
         shader.set("projection", projection);
 
         // glimac::bind_default_shader();
-        
 
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
