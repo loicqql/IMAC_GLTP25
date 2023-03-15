@@ -16,6 +16,8 @@ int main()
         // glm::vec3 color;
     };
 
+    std::vector<uint32_t> indices;
+
     /* code */
     //vbo
     GLuint vbo;
@@ -29,9 +31,21 @@ int main()
     vertices.push_back(Vertex3D{{0.0, 0.5, 0.0}});
 
 
+    indices.push_back(0);
+    indices.push_back(1);
+    indices.push_back(2);
+
+
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex3D), &vertices.front(), GL_STATIC_DRAW); 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), &indices.front(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     //vao
     GLuint vao;
@@ -39,6 +53,8 @@ int main()
     glBindVertexArray(vao); 
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo); 
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); 
 
     glEnableVertexAttribArray(0);
     // glEnableVertexAttribArray(8);   
@@ -63,7 +79,7 @@ int main()
         glimac::bind_default_shader();
         
 
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 

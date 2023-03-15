@@ -51,6 +51,7 @@ add_exercise(TP3_exo2_triangle_couleurs)
 add_exercise(TP3_exo3_structure_vertex)
 add_exercise(TP3_exo3_quad)
 add_exercise(TP3_exo4_circle)
+add_exercise(TP4_shaders_grey2d)
 
 
 add_exercise(Project)
