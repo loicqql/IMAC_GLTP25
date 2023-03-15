@@ -10,5 +10,5 @@ void vec2_limit(glm::vec2 &vec, glm::vec2 limit) {
 }
 
 float vec2_get_direction(glm::vec2 vec) {
-    return std::atan(vec.y /vec.x);
+    return std::atan(vec.y / vec.x);
 }
