@@ -1,17 +1,24 @@
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 #include "p6/p6.h"
 #include "glm/glm.hpp"
 
+#include <iostream>
+
 #include "glimac/default_shader.hpp"
 
-# include "PerlinNoise.hpp"
+#include "PerlinNoise.hpp"
+#include "camera.hpp"
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
 int main()
 {
     auto ctx = p6::Context{{1280, 720, "Project Ground"}};
+
+    Camera camera = Camera();
     // ctx.maximize_window();
 
     /*********************************
@@ -29,9 +36,11 @@ int main()
     //     }
     // }
 
+    glEnable(GL_DEPTH_TEST);
+
     struct Vertex3D {
         glm::vec3 position;
-        // glm::vec3 color;
+        glm::vec3 color;
     };
 
     /* code */
@@ -67,11 +76,20 @@ int main()
 
     for(float i = -1.0; i < 1; i += 1.0/(float)width){
         for(float j = -1.0; j < 1; j += 1.0/(float)height){
+
+            // {z + .2, z + .2, z + .2}
+
+            float z = (float)perlin.noise2D(i, j + 1.0/(float)height);
+            vertices.push_back(Vertex3D{{i, j + 1.0/(float)height, z}, {1.0, 1.0, 1.0}});
+
+            z = (float)perlin.noise2D(i, j);
+            vertices.push_back(Vertex3D{{i, j, z}, {1.0, 1.0, 1.0}});
+
+            z = (float)perlin.noise2D(i, j + 1.0/(float)height);
+            vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, z}, {1.0, 1.0, 1.0}});
             
-            vertices.push_back(Vertex3D{{i, j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
-            vertices.push_back(Vertex3D{{i, j, (float)perlin.noise2D(i, j)}});
-            vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, (float)perlin.noise2D(i, j + 1.0/(float)height)}});
-            vertices.push_back(Vertex3D{{i + 1.0/(float)width, j, (float)perlin.noise2D(i + 1.0/(float)width, j)}});
+            z = (float)perlin.noise2D(i + 1.0/(float)width, j);
+            vertices.push_back(Vertex3D{{i + 1.0/(float)width, j, z}, {1.0, 1.0, 1.0}});
 
             indices.push_back(indice);
             indices.push_back(indice + 1);
@@ -120,10 +138,10 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); 
 
     glEnableVertexAttribArray(0);
-    // glEnableVertexAttribArray(8);   
+    glEnableVertexAttribArray(1);   
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*) offsetof(Vertex3D, position));
-    // glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*) offsetof(Vertex3D, color));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*) offsetof(Vertex3D, color));
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
@@ -134,23 +152,72 @@ int main()
         "shaders/camera.fs.glsl"
     );
 
+    camera.init();
+
+    float i = 0.0;
+
     // Declare your infinite update loop.
     ctx.update = [&]() {
         /*********************************
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        
+
+        camera.update(glm::vec3(0.0f, 0.f, 0.0f), glm::vec3(0.0f, i, 0.0f));
+        glm::vec3 posCam = camera.getPos();
+        glm::vec3 rotCam = camera.getRot();
+
+        i += 0.001;
+
+        /*
+s
+        vertices.clear();
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        for(float i = -1.0; i < 1; i += 1.0/(float)width){
+            for(float j = -1.0; j < 1; j += 1.0/(float)height){
+
+                float z = (float)perlin.noise2D(i + pos.x, j + 1.0/(float)height + pos.y);
+                vertices.push_back(Vertex3D{{i, j + 1.0/(float)height, z}, {1.0, 1.0, 1.0}});
+
+                z = (float)perlin.noise2D(i + pos.x, j + pos.y);
+                vertices.push_back(Vertex3D{{i, j, z}, {1.0, 1.0, 1.0}});
+
+                z = (float)perlin.noise2D(i + pos.x, j + 1.0/(float)height + pos.y);
+                vertices.push_back(Vertex3D{{i + 1.0/(float)width,  j + 1.0/(float)height, z}, {1.0, 1.0, 1.0}});
+                
+                z = (float)perlin.noise2D(i + pos.x + 1.0/(float)width, j + pos.y);
+                vertices.push_back(Vertex3D{{i + 1.0/(float)width, j, z}, {1.0, 1.0, 1.0}});
+            }
+        }
+
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex3D), &vertices.front(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        */
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(vao);
 
         shader.use();
 
-        glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        glm::mat4 view          = glm::mat4(1.0f);
-        glm::mat4 projection    = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // view  = glm::rotate(view, glm::radians(-50.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate camera
+        // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
+
+        view = glm::translate(view, glm::vec3(posCam.x, posCam.y, posCam.z));
+        view = glm::rotate(view, rotCam.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::rotate(view, rotCam.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        // view = glm::rotate(view, rotCam.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
         projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(shader.id(), "model");
