@@ -41,7 +41,7 @@ int main()
     );
 
 
-    float i = 0.0;
+    // float i = 0.0;
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -49,10 +49,12 @@ int main()
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
 
-        camera.update(glm::vec3(0.0f, 0.f, 0.0f), glm::vec3(0.0f, i, 0.0f));
+        boat.update(ctx);
+
+        camera.update(boat.getPos(), boat.getRot());
         glm::vec3 posCam = camera.getPos();
 
-        i -= 0.01;
+        // i -= 0.01;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -65,7 +67,7 @@ int main()
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
 
-        view = glm::lookAt(posCam, {0, 0, 0}, {0 , 1, 0});
+        view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
 
         projection = glm::perspective(glm::radians(45.0f), (float)ctx.current_canvas_width() / (float)ctx.current_canvas_height(), 0.1f, 100.0f);
         // retrieve the matrix uniform locations

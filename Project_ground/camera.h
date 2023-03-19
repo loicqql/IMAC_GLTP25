@@ -17,8 +17,8 @@ class Camera {
 
     public : 
 
-        float distance = 0.5f;
-        float height = 0.25f;
+        float distance = 0.30f;
+        float height = 0.12f;
 
         void init() {
             this->_position = glm::vec3(0);
@@ -29,7 +29,7 @@ class Camera {
             // glm::vec2 mouse = ctx.mouse();
 
 
-            this->_position = {glm::cos(rotation.y) * distance + position.x, 0.2f, glm::sin(rotation.y) * distance + position.z};
+            this->_position = {glm::cos(rotation.y) * distance + position.x, height, glm::sin(rotation.y) * distance + position.z};
 
 
         }
