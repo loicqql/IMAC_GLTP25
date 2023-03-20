@@ -15,6 +15,10 @@
 #include "Boat.h"
 #include "Terrain.h"
 
+#include "./loaders/gltf/loaderGLTF.h"
+
+#include <fstream>
+
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
 int main()
@@ -42,6 +46,11 @@ int main()
 
 
     // float i = 0.0;
+
+    std::string filename = "./assets/models/cube.gltf";
+
+    loaderGLTF cube;
+    cube.init(filename.c_str());
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -83,6 +92,8 @@ int main()
 
         terrain.draw();
         boat.draw();
+
+        cube.draw();
 
     };
 
