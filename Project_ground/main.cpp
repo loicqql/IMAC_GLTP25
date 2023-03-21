@@ -38,11 +38,23 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(45.0f), (float)ctx.current_canvas_width() / (float)ctx.current_canvas_height(), 0.1f, 100.0f);
 
     const p6::Shader shader = p6::load_shader(
         "shaders/camera.vs.glsl",
         "shaders/camera.fs.glsl"
     );
+
+    const p6::Shader shaderCube = p6::load_shader(
+        "shaders/cube.vs.glsl",
+        "shaders/cube.fs.glsl"
+    );
+
+    shader.use(); 
+    shader.set("projection", projection);
+    shader.use(); 
+    shaderCube.set("projection", projection);
 
 
     // float i = 0.0;
@@ -67,31 +79,40 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // glimac::bind_default_shader();
+
         shader.use();        
 
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);
+        
 
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
-
         view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
-
-        projection = glm::perspective(glm::radians(45.0f), (float)ctx.current_canvas_width() / (float)ctx.current_canvas_height(), 0.1f, 100.0f);
+        
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(shader.id(), "model");
         unsigned int viewLoc  = glGetUniformLocation(shader.id(), "view");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-        // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-        shader.set("projection", projection);
 
-        // glimac::bind_default_shader();
-
+        
         terrain.draw();
         boat.draw();
+
+        shaderCube.use();
+
+        modelLoc = glGetUniformLocation(shaderCube.id(), "model");
+        viewLoc  = glGetUniformLocation(shaderCube.id(), "view");
+
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
+            glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(0.05f)))
+        );
 
         cube.draw();
 
