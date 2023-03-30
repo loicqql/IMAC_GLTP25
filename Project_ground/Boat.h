@@ -1,10 +1,12 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/ext/quaternion_transform.hpp"
 #include "glm/fwd.hpp"
 
-#include "OpenGlWrapper.h"
+#include "./loaders/gltf/loaderGLTF.h"
 
+#include "glm/gtc/type_ptr.hpp"
 #include "p6/p6.h"
 
 class Boat {
@@ -12,10 +14,14 @@ class Boat {
         glm::vec3 _position{};
         glm::vec3 _rotation{};
 
-        OpenGlWrapper _openGlWrapper;
+        loaderGLTF main;
+        loaderGLTF rouge;
+        loaderGLTF bleu;
 
         float width = 0.02;
         float speed = 0.0;
+        float rotBleu = 0.0;
+        float rotRouge = 0.0;
     
     public: 
 
@@ -24,21 +30,9 @@ class Boat {
             _position = {0.5, 0, 0.1};
             _rotation = {0, 0, 0};
 
-
-            updateVertices();
-
-            uint32_t indice = 0;
-
-            _openGlWrapper._indices.push_back(indice);
-            _openGlWrapper._indices.push_back(indice + 1);
-            _openGlWrapper._indices.push_back(indice + 2);
-            _openGlWrapper._indices.push_back(indice);
-            _openGlWrapper._indices.push_back(indice + 2);
-            _openGlWrapper._indices.push_back(indice + 3);
-            indice += 4;
-
-            
-            _openGlWrapper.updateIndices();
+            main.init("./assets/models/boat/boat.gltf");
+            rouge.init("./assets/models/boat/rouge.gltf");
+            bleu.init("./assets/models/boat/bleu.gltf");
 
         }
 
@@ -47,13 +41,19 @@ class Boat {
             float forceRot = 0.01;
             float limit = 0.0017; 
 
+            float coeffRot = 0.01;
+
             if(ctx.key_is_pressed(GLFW_KEY_S) && ctx.key_is_pressed(GLFW_KEY_L)) {
                 speed += 0.00005;
+                rotRouge += coeffRot;
+                rotBleu += coeffRot;
             }else if(ctx.key_is_pressed(GLFW_KEY_S)) {
-                _rotation.y -= forceRot;
+                _rotation.y += forceRot;
+                rotRouge += coeffRot;
                 speed -= 0.000001;
             }else if(ctx.key_is_pressed(GLFW_KEY_L)){
-                _rotation.y += forceRot;
+                _rotation.y -= forceRot;
+                rotBleu += coeffRot;
                 speed -= 0.000001;
             }            
 
@@ -69,13 +69,32 @@ class Boat {
                 speed -= 0.00001;
             }
 
-            this->_position = {glm::cos(_rotation.y + p6::PI) * speed + _position.x, 0, glm::sin(_rotation.y + p6::PI) * speed + _position.z};
-
-            updateVertices();
+            this->_position = {glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z};
         }
 
-        void draw() const {
-            _openGlWrapper.draw();
+        void draw(unsigned int modelLoc) {
+        
+            glm::mat4 base = glm::mat4(1.0);
+            
+            base = glm::translate(base, glm::vec3(_position.x, 0.0, _position.z));
+            base = glm::rotate(base, -_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            base = glm::rotate(base, p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
+            base = glm::scale(base, glm::vec3(0.03)); // final scale
+            // base = glm::translate(base, glm::vec3(0.0, 1.0, 0.0)); // fix final z
+            
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(base));
+            main.draw();
+            
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::rotate(base, -rotBleu, glm::vec3(1.0f, 0.0f, 0.0f))));
+            rouge.draw();
+
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::rotate(base, -rotRouge, glm::vec3(1.0f, 0.0f, 0.0f))));
+            bleu.draw();
+
+        }
+
+        void drawMain() {
+            
         }
 
         glm::vec3 getPos() {
@@ -84,18 +103,5 @@ class Boat {
 
         glm::vec3 getRot() {
             return _rotation;
-        }
-
-    private: 
-
-        void updateVertices() {
-            _openGlWrapper._vertices.clear();
-
-            _openGlWrapper._vertices.push_back(Vertex3D{{_position.x, _position.z * -1.0, 0.04}, {1.0, 0, 0}});
-            _openGlWrapper._vertices.push_back(Vertex3D{{_position.x + width, _position.z * -1.0, 0.04}, {1.0, 0, 0}});
-            _openGlWrapper._vertices.push_back(Vertex3D{{_position.x + width, (_position.z + width) * -1.0, 0.04}, {1.0, 0, 0}});
-            _openGlWrapper._vertices.push_back(Vertex3D{{_position.x, (_position.z + width) * -1.0, 0.04}, {1.0, 0, 0}});
-
-            _openGlWrapper.updateVertices();
         }
 };

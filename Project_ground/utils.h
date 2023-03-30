@@ -20,9 +20,18 @@ inline float float_limit(float f, float limit, bool floor) {
     }
 
     return f;
-    
 }
 
 inline float vec2_get_direction(glm::vec2 vec) {
     return std::atan(vec.y / vec.x);
+}
+
+inline float float_map(float x, float x_min, float x_max) {
+    return (x_max - x_min) * x + x_min;
+}
+
+inline glm::vec3 color_map(float x, float x_min, float x_max, glm::vec3 color_min, glm::vec3 color_max) {
+    float _x = float_map(x, x_min, x_max);
+
+    return glm::vec3(float_map(_x, color_max.x, color_min.x), float_map(_x, color_max.y, color_min.y), float_map(_x, color_max.z, color_min.z));
 }

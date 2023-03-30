@@ -4,7 +4,7 @@
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/glm.hpp"
 
-#include <math.h>
+#include <cmath>
 
 #include "p6/p6.h"
 
@@ -34,12 +34,16 @@ int main()
     boat.init();
 
     Terrain terrain;
-    terrain.init();
+    terrain.initTerrain();
+    terrain.initOcean();
+
+    // Ocean ocean;
+    // ocean.init();
 
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), (float)ctx.current_canvas_width() / (float)ctx.current_canvas_height(), 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(ctx.current_canvas_width()) / static_cast<float>(ctx.current_canvas_height()), 0.001f, 100.0f);
 
     const p6::Shader shader = p6::load_shader(
         "shaders/camera.vs.glsl",
@@ -51,18 +55,11 @@ int main()
         "shaders/cube.fs.glsl"
     );
 
-    shader.use(); 
     shader.set("projection", projection);
-    shader.use(); 
     shaderCube.set("projection", projection);
-
+    // shaderOcean.set("projection", projection);
 
     // float i = 0.0;
-
-    std::string filename = "./assets/models/cube.gltf";
-
-    loaderGLTF cube;
-    cube.init(filename.c_str());
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -72,7 +69,7 @@ int main()
 
         boat.update(ctx);
 
-        camera.update(boat.getPos(), boat.getRot());
+        camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
 
         // i -= 0.01;
@@ -96,11 +93,11 @@ int main()
         unsigned int viewLoc  = glGetUniformLocation(shader.id(), "view");
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-        
+        terrain.update(); // animation ocean = a bit laggy
         terrain.draw();
-        boat.draw();
+
 
         shaderCube.use();
 
@@ -108,13 +105,9 @@ int main()
         viewLoc  = glGetUniformLocation(shaderCube.id(), "view");
 
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE,
-            glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(0.05f)))
-        );
-
-        cube.draw();
+        boat.draw(modelLoc);
 
     };
 
