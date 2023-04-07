@@ -15,7 +15,7 @@
 #include "Boat.h"
 #include "Terrain.h"
 
-#include "./loaders/gltf/loaderGLTF.h"
+#include "Boid/Boid.h"
 
 #include <fstream>
 
@@ -25,6 +25,19 @@ int main()
 {
     auto ctx = p6::Context{{1280, 720, "Project Ground"}};
     // ctx.maximize_window();
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> randPosition(-1.0, 1.0);
+    std::uniform_real_distribution<double> randVelocity(-0.001, 0.001);
+
+    std::vector<Boid> boids;
+
+    for (int i = 0; i < 50; ++i) {
+        Boid boid(glm::vec3(randPosition(mt), randPosition(mt), 0.5), glm::vec3(randVelocity(mt), randVelocity(mt), 0));
+        boids.emplace_back(boid);
+        boids[i].init();
+    }
 
 
     Camera camera = Camera();
@@ -58,6 +71,11 @@ int main()
     shader.set("projection", projection);
     shaderCube.set("projection", projection);
     // shaderOcean.set("projection", projection);
+
+    const p6::Shader shadow = p6::load_shader(
+        "shaders/shadow.vs.glsl",
+        "shaders/shadow.fs.glsl"
+    );
 
     // float i = 0.0;
 
@@ -108,6 +126,23 @@ int main()
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
         boat.draw(modelLoc);
+
+        // boids[0].update(ctx, boids);
+        // boids[0].draw(modelLoc);
+
+        // boids[1].update(ctx, boids);
+        // boids[1].draw(modelLoc);
+
+        for (uint i = 0; i < boids.size(); ++i) {
+            boids[i].update(ctx, boids);
+            boids[i].draw(modelLoc);
+        }
+
+        
+
+        //
+
+        
 
     };
 

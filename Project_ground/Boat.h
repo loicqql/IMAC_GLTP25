@@ -30,9 +30,9 @@ class Boat {
             _position = {0.5, 0, 0.1};
             _rotation = {0, 0, 0};
 
-            main.init("./assets/models/boat/boat.gltf");
-            rouge.init("./assets/models/boat/rouge.gltf");
-            bleu.init("./assets/models/boat/bleu.gltf");
+            main.load("./assets/models/boat/boat.gltf");
+            rouge.load("./assets/models/boat/rouge.gltf");
+            bleu.load("./assets/models/boat/bleu.gltf");
 
         }
 
@@ -91,10 +91,6 @@ class Boat {
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::rotate(base, -rotRouge, glm::vec3(1.0f, 0.0f, 0.0f))));
             bleu.draw();
 
-        }
-
-        void drawMain() {
-            
         }
 
         glm::vec3 getPos() {
