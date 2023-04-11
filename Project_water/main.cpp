@@ -26,7 +26,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), (float)ctx.current_canvas_width() / (float)ctx.current_canvas_height(), 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), (float)1280 / (float)720, 0.1f, 100.0f);
 
     const p6::Shader shader = p6::load_shader(
         "shaders/test.vs.glsl",

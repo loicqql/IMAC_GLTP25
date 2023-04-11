@@ -60,9 +60,9 @@ class Terrain  {
                     float zi1 = static_cast<float>(perlin.noise2D(i * scaleTerrainPerlin + di + dx, j * scaleTerrainPerlin + dy)) * coeffPerlin;
                     float zj1 = static_cast<float>(perlin.noise2D(i * scaleTerrainPerlin + dx, j * scaleTerrainPerlin + dj + dy)) * coeffPerlin;
 
-                    z = float_limit(z, groundLevel, true);
-                    zi1 = float_limit(zi1, groundLevel, true);
-                    zj1 = float_limit(zj1, groundLevel, true);
+                    // z = float_limit(z, groundLevel, true);
+                    // zi1 = float_limit(zi1, groundLevel, true);
+                    // zj1 = float_limit(zj1, groundLevel, true);
 
                     float voxel_height2 = 0.0;
 
@@ -72,7 +72,7 @@ class Terrain  {
                         voxel_height2 = std::fabs(z - zi1) / 2.0f;
                     }
 
-                    if(z != groundLevel) {
+                    // if(z != groundLevel) {
 
                         voxel_height2 += paddingTopBottom(mt);
 
@@ -130,7 +130,7 @@ class Terrain  {
                         _openGlWrapperTerrain._indices.push_back(indice + 4);
 
                         indice += 8;
-                    }
+                    // }
                 }
             }
 

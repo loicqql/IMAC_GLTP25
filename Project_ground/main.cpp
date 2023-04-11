@@ -56,7 +56,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(ctx.current_canvas_width()) / static_cast<float>(ctx.current_canvas_height()), 0.001f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
 
     const p6::Shader shader = p6::load_shader(
         "shaders/camera.vs.glsl",
@@ -71,13 +71,6 @@ int main()
     shader.set("projection", projection);
     shaderCube.set("projection", projection);
     // shaderOcean.set("projection", projection);
-
-    const p6::Shader shadow = p6::load_shader(
-        "shaders/shadow.vs.glsl",
-        "shaders/shadow.fs.glsl"
-    );
-
-    // float i = 0.0;
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -103,7 +96,7 @@ int main()
         
 
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
+        view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
         view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
         
         // retrieve the matrix uniform locations
@@ -138,11 +131,6 @@ int main()
             boids[i].draw(modelLoc);
         }
 
-        
-
-        //
-
-        
 
     };
 

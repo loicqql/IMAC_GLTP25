@@ -6,10 +6,11 @@ project(OpenGL-TPs-Template)
 
 # ---Add p6 library---
 include(FetchContent)
+set(P6_RAW_OPENGL_MODE ON CACHE BOOL "")
 FetchContent_Declare(
     p6
     GIT_REPOSITORY https://github.com/julesfouchy/p6
-    GIT_TAG b9e6366e1198abdd7bc835e6125f9ff5b89a75b8
+    GIT_TAG 350bf29ec49f43c8600c7e0dbc6099091367c752
 )
 FetchContent_MakeAvailable(p6)
 
@@ -57,3 +58,4 @@ add_exercise(TP4_shaders_grey2d)
 add_exercise(Project)
 add_exercise(Project_ground)
 add_exercise(Project_water)
+add_exercise(Project_light)

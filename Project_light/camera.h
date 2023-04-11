@@ -9,7 +9,6 @@
 
 #include <cmath>
 
-#include "Boat.h"
 
 class Camera {
     
@@ -22,8 +21,6 @@ class Camera {
         float y_mouse;
         float rotationy_delta_user;
 
-        float intro = 3.0;
-
         float distance = 0.30f;
         float height = 0.12f;
 
@@ -35,17 +32,11 @@ class Camera {
             rotationy_delta_user = 0.f;
         }
 
-        void update(p6::Context& ctx, Boat& boat) {
-
-            if(intro > 0.03)  {
-                intro -= 0.04;
-            }else if(intro > 0.004)  {
-                intro -= 0.004;
-            }
+        void update(p6::Context& ctx) {
 
             float force_reset_rotationx_delta_user = 0.005f;
-            glm::vec3 position = boat.getPos();
-            glm::vec3 rotation = boat.getRot();
+            glm::vec3 position {0};
+            glm::vec3 rotation {0};
 
             glm::vec2 mouse = ctx.mouse();
 
@@ -80,7 +71,7 @@ class Camera {
                 rotationy_delta_user =  position.y - height;
             }
 
-            this->_position = {glm::cos(rotation.y + rotationx_delta_user) * distance + position.x, height + rotationy_delta_user + intro, glm::sin(rotation.y + rotationx_delta_user) * distance + position.z};
+            this->_position = {glm::cos(rotation.y + rotationx_delta_user) * distance + position.x, height + rotationy_delta_user, glm::sin(rotation.y + rotationx_delta_user) * distance + position.z};
 
         }
 
