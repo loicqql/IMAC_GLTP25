@@ -70,18 +70,22 @@ void loaderGLTF::bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model &model, t
                     primitive).
                     */
         }
+        
 
         const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-        std::cout << "bufferview.target " << bufferView.target << std::endl;
+        // DEBUG
+        /* std::cout << "bufferview.target " << bufferView.target << std::endl;*/
 
         GLuint vbo;
         glGenBuffers(1, &vbo);
         vbos[i] = vbo;
         glBindBuffer(bufferView.target, vbo);
 
-        std::cout << "buffer.data.size = " << buffer.data.size()
+        // DEBUG
+
+        /*std::cout << "buffer.data.size = " << buffer.data.size()
                 << ", bufferview.byteOffset = " << bufferView.byteOffset
-                << std::endl;
+                << std::endl;*/
 
         glBufferData(bufferView.target, bufferView.byteLength,
                     &buffer.data.at(0) + bufferView.byteOffset, GL_STATIC_DRAW);

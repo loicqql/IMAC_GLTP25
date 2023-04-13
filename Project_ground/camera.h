@@ -22,7 +22,8 @@ class Camera {
         float y_mouse;
         float rotationy_delta_user;
 
-        float intro = 3.0;
+        // float intro = 3.0;
+        float intro = 0;
 
         float distance = 0.30f;
         float height = 0.12f;

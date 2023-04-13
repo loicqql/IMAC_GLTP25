@@ -20,7 +20,7 @@ class Terrain  {
         float coeffPerlin = 0.5;
         float scaleTerrainPerlin = 2;
 
-        float groundLevel = 0.025;
+        float groundLevel = -0.025;
 
         float scaleOceanPerlin = 25.0;
         float coeffOcean = 0.01;
@@ -72,21 +72,21 @@ class Terrain  {
                         voxel_height2 = std::fabs(z - zi1) / 2.0f;
                     }
 
-                    // if(z != groundLevel) {
+                    // if(z > groundLevel) {
 
                         voxel_height2 += paddingTopBottom(mt);
 
                         //top
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j, z + voxel_height2}, color_top});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j, z + voxel_height2}, color_top});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j + dj, z + voxel_height2}, color_top});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j + dj, z + voxel_height2}, color_top});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j, z + voxel_height2}, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j, z + voxel_height2}, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j + dj, z + voxel_height2}, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j + dj, z + voxel_height2}, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5)});
 
                         //bottom
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j, z - voxel_height2}, color_bottom});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j, z - voxel_height2}, color_bottom});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j + dj, z - voxel_height2}, color_bottom});
-                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j + dj, z - voxel_height2}, color_bottom});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j, z - voxel_height2}, z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j, z - voxel_height2}, z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i + di,  j + dj, z - voxel_height2}, z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2)});
+                        _openGlWrapperTerrain._vertices.push_back(Vertex3D{{i,  j + dj, z - voxel_height2}, z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2)});
 
 
                         //top
@@ -140,91 +140,26 @@ class Terrain  {
 
         void initOcean() {
 
-            uint32_t indice = 0;
+            _openGlWrapperOcean._vertices.push_back(Vertex3D{{-1,  -1, 0}, {0.5, 0.5, 0.5}});
+            _openGlWrapperOcean._vertices.push_back(Vertex3D{{-1,  1, 0}, {0.5, 0.5, 0.5}});
+            _openGlWrapperOcean._vertices.push_back(Vertex3D{{1,  1, 0}, {0.5, 0.5, 0.5}});
+            _openGlWrapperOcean._vertices.push_back(Vertex3D{{1,  -1, 0}, {0.5, 0.5, 0.5}});
 
-            float di = 1.9f/static_cast<float>(width); // delta i
-            float dj = 1.9f/static_cast<float>(height); // delta j
-
-            updateVertices();
+            _openGlWrapperOcean._indices.push_back(0);
+            _openGlWrapperOcean._indices.push_back(1);
+            _openGlWrapperOcean._indices.push_back(2);
+            _openGlWrapperOcean._indices.push_back(0);
+            _openGlWrapperOcean._indices.push_back(2);
+            _openGlWrapperOcean._indices.push_back(3);
             
-
-            for(float i = -1.0; i < 1; i += di){
-                for(float j = -1.0; j < 1; j += dj){
-
-                    //top
-                    _openGlWrapperOcean._indices.push_back(indice);
-                    _openGlWrapperOcean._indices.push_back(indice + 1);
-                    _openGlWrapperOcean._indices.push_back(indice + 3);
-                    _openGlWrapperOcean._indices.push_back(indice + 1);
-                    _openGlWrapperOcean._indices.push_back(indice + 2);
-                    _openGlWrapperOcean._indices.push_back(indice + 3);
-                    
-
-                    indice += 4;
-                }
-            }
             _openGlWrapperOcean.updateIndices();
-        }
-
-        void update() {
-            offsetXOcean -= 1;
-            offsetYOcean -= 1;
-            updateVertices();
-        }
-
-        void draw() const {
-            _openGlWrapperTerrain.draw();
-            _openGlWrapperOcean.draw();
-        }
-
-    private:
-
-        auto getColorAndZ(siv::PerlinNoise &perlin, float i, float j) {
-
-            glm::vec3 top = {0.77, 0.67, 0.99};
-            glm::vec3 bottom = {0.47, 0.37, 0.69};
-
-            auto z = static_cast<float>(perlin.noise2D(i * scaleOceanPerlin + offsetXOcean * 0.008, j * scaleOceanPerlin + offsetYOcean * 0.008));
-
-            return std::make_tuple(
-                ((z - 0.5f) * coeffOcean) + groundLevel,
-                color_map(z, 0, 1, top, bottom)
-            );
-        }
-
-        void updateVertices() {
-            _openGlWrapperOcean._vertices.clear();
-
-            const siv::PerlinNoise::seed_type seed = 123456u;
-            siv::PerlinNoise perlin{ seed };
-
-            float di = 1.9f/static_cast<float>(width); // delta i
-            float dj = 1.9f/static_cast<float>(height); // delta j
-
-
-            for(float i = -1.0; i < 1; i += di){
-                for(float j = -1.0; j < 1; j += dj) {
-
-                    glm::vec3 color;
-                    float z = 0.f;
-
-                    std::tie(z, color) = getColorAndZ(perlin, i, j);
-                    _openGlWrapperOcean._vertices.push_back(Vertex3D{{i,  j, z}, color});
-
-                    std::tie(z, color) = getColorAndZ(perlin, i + di, j);
-                    _openGlWrapperOcean._vertices.push_back(Vertex3D{{i + di,  j, z}, color});
-
-                    std::tie(z, color) = getColorAndZ(perlin, i + di, j + dj);
-                    _openGlWrapperOcean._vertices.push_back(Vertex3D{{i + di,  j + dj, z}, color});
-
-                    std::tie(z, color) = getColorAndZ(perlin, i, j + dj);
-                    _openGlWrapperOcean._vertices.push_back(Vertex3D{{i,  j + dj, z}, color});
-
-                }
-            }
-
             _openGlWrapperOcean.updateVertices();
         }
 
-        
+        void drawMountain() const {
+            _openGlWrapperTerrain.draw();
+        }
+        void drawWater() const {
+            _openGlWrapperOcean.draw();
+        }      
 };

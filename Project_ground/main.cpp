@@ -17,6 +17,8 @@
 
 #include "Boid/Boid.h"
 
+#include "Water/WaterFrameBuffers.h"
+
 #include <fstream>
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
@@ -31,13 +33,13 @@ int main()
     std::uniform_real_distribution<double> randPosition(-1.0, 1.0);
     std::uniform_real_distribution<double> randVelocity(-0.001, 0.001);
 
-    std::vector<Boid> boids;
+    // std::vector<Boid> boids;
 
-    for (int i = 0; i < 50; ++i) {
-        Boid boid(glm::vec3(randPosition(mt), randPosition(mt), 0.5), glm::vec3(randVelocity(mt), randVelocity(mt), 0));
-        boids.emplace_back(boid);
-        boids[i].init();
-    }
+    // for (int i = 0; i < 50; ++i) {
+    //     Boid boid(glm::vec3(randPosition(mt), randPosition(mt), 0.5), glm::vec3(randVelocity(mt), randVelocity(mt), 0));
+    //     boids.emplace_back(boid);
+    //     boids[i].init();
+    // }
 
 
     Camera camera = Camera();
@@ -50,10 +52,20 @@ int main()
     terrain.initTerrain();
     terrain.initOcean();
 
-    // Ocean ocean;
-    // ocean.init();
+    WaterFrameBuffers waterfbos;
+
+    GLuint waterDudvTexture = 0;
+    loadTexture(waterDudvTexture, "assets/waterDUDV.png");
+    GLuint waterNormalTexture = 0;
+    loadTexture(waterNormalTexture, "assets/waterNormalMap.png");
+
+    const float WAVE_SPEED = 0.05f;
+    float moveWater = 0;
+
+    // glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CLIP_DISTANCE0);
 
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
@@ -68,68 +80,129 @@ int main()
         "shaders/cube.fs.glsl"
     );
 
+    const p6::Shader shaderWater = p6::load_shader(
+        "shaders/water.vs.glsl",
+        "shaders/water.fs.glsl"
+    );
+
+    const p6::Shader shaderG = p6::load_shader(
+        "shaders/waterG.vs.glsl",
+        "shaders/waterG.fs.glsl"
+    );
+
     shader.set("projection", projection);
     shaderCube.set("projection", projection);
-    // shaderOcean.set("projection", projection);
+    shaderWater.set("projection", projection);
+    shaderG.set("projection", projection);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+    waterfbos.check();
+
+    
+    glm::vec3 sunColor = {1.0, 1.0, 1.0};
+    glm::vec3 sunPosition = {-0.5, 1.0, 0.5};
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
-        /*********************************
-         * HERE SHOULD COME THE RENDERING CODE
-         *********************************/
-
-        boat.update(ctx);
-
-        camera.update(ctx, boat);
-        glm::vec3 posCam = camera.getPos();
-
-        // i -= 0.01;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // glimac::bind_default_shader();
+        const float OCEAN_HEIGHT = 0.f;
 
-        shader.use();        
+        moveWater += WAVE_SPEED * ctx.delta_time();
 
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        boat.update(ctx);
+        camera.update(ctx, boat);
+        glm::vec3 posCam = camera.getPos();
+
+        glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
-        
-
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
         view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
+
+        shaderG.use();
+        shaderG.set("model", model);
+        shaderG.set("view", view);
+
+        // glm::mat4 projectionOrtho = glm::ortho<float>(-1,1,-1,1,-1,10);
+        // shaderG.set("projection", projectionOrtho);
+
+        //invert pitch cam & render reflection texture
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::vec3 posCamReflection = posCam;
+        float distance = 2 * (posCam.y - OCEAN_HEIGHT);
+        posCamReflection.y -= distance;
+        shaderG.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+
+        shaderG.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
+        waterfbos.bindReflectionFrameBuffer();
+        // glClearColor(0.2, 0.2, 0.8, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        terrain.drawMountain();
+        waterfbos.unbindCurrentFrameBuffer();
         
-        // retrieve the matrix uniform locations
-        unsigned int modelLoc = glGetUniformLocation(shader.id(), "model");
-        unsigned int viewLoc  = glGetUniformLocation(shader.id(), "view");
-        // pass them to the shaders (3 different ways)
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-        terrain.update(); // animation ocean = a bit laggy
-        terrain.draw();
+        
+        shaderG.set("view", view); // reset cam pos
 
 
-        shaderCube.use();
+        //render refraction texture
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shaderG.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
+        waterfbos.bindRefractionFrameBuffer();
+        // glClearColor(0.2, 0.2, 0.8, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        terrain.drawMountain();
+        waterfbos.unbindCurrentFrameBuffer();
 
-        modelLoc = glGetUniformLocation(shaderCube.id(), "model");
-        viewLoc  = glGetUniformLocation(shaderCube.id(), "view");
 
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        //render to screen
+        shader.use();
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader.set("model", model);
+        shader.set("view", view);
+        shader.set("plane", glm::vec4(0, -1, 0, 100));
+        shader.set("projection", projection);
+        terrain.drawMountain();
 
-        boat.draw(modelLoc);
+        shaderWater.use();
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(shaderWater.id(), "reflectionTexture"), 0);
+        glBindTexture(GL_TEXTURE_2D, waterfbos.getReflectionTexture());
+        
+        glActiveTexture(GL_TEXTURE1);
+        glUniform1i(glGetUniformLocation(shaderWater.id(), "refractionTexture"), 1);
+        glBindTexture(GL_TEXTURE_2D, waterfbos.getRefractionTexture());
 
-        // boids[0].update(ctx, boids);
-        // boids[0].draw(modelLoc);
+        glActiveTexture(GL_TEXTURE2);
+        glUniform1i(glGetUniformLocation(shaderWater.id(), "dudvMap"), 2);
+        glBindTexture(GL_TEXTURE_2D, waterDudvTexture);
 
-        // boids[1].update(ctx, boids);
-        // boids[1].draw(modelLoc);
+        glActiveTexture(GL_TEXTURE3);
+        glUniform1i(glGetUniformLocation(shaderWater.id(), "normalMap"), 3);
+        glBindTexture(GL_TEXTURE_2D, waterNormalTexture);
 
-        for (uint i = 0; i < boids.size(); ++i) {
-            boids[i].update(ctx, boids);
-            boids[i].draw(modelLoc);
-        }
+        shaderWater.set("lightPosition", sunPosition);
+        shaderWater.set("lightColor", sunColor);
+        shaderWater.set("moveWater", moveWater);
+        shaderWater.set("cameraPosition", posCam);
+        shaderWater.set("model", model);
+        shaderWater.set("view", view);
+        terrain.drawWater();
+
+        // shaderCube.use();
+        // shaderCube.set("model", model);
+        // shaderCube.set("view", view);
+
+        // boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
+        // for (uint i = 0; i < boids.size(); ++i) {
+        //     boids[i].update(ctx, boids);
+        //     boids[i].draw(glGetUniformLocation(shaderCube.id(), "model"));
+        // }
 
 
     };

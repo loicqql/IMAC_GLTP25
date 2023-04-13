@@ -1,6 +1,7 @@
 #pragma once
 #include "glm/geometric.hpp"
 #include <glm/glm.hpp>
+#include "p6/p6.h"
 
 inline void vec3_limit(glm::vec3 &vec, glm::vec3 limit) {
     vec.x = vec.x > limit.x ? limit.x : vec.x;
@@ -34,4 +35,20 @@ inline glm::vec3 color_map(float x, float x_min, float x_max, glm::vec3 color_mi
     float _x = float_map(x, x_min, x_max);
 
     return glm::vec3(float_map(_x, color_max.x, color_min.x), float_map(_x, color_max.y, color_min.y), float_map(_x, color_max.z, color_min.z));
+}
+
+void loadTexture(GLuint &textureId, auto filename) {
+    const img::Image image = p6::load_image_buffer(filename);
+
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

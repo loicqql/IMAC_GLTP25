@@ -82,7 +82,7 @@ int main()
 
         //shadow pass pass        
 
-        // shadowMapFBO.BindForWriting();
+        shadowMapFBO.BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
         glCullFace(GL_BACK);
 
