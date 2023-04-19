@@ -18,7 +18,7 @@ void main(){
     float z = 0.5 * ProjCoords.z + 0.5;
     float Depth = texture(gShadowMap, UVCoords).x;
     
-    float bias = 0.005;
+    float bias = 0.001;
 
     if(Depth + bias < z) {
         fFragColor = vColor - vec3(1) * 0.1;

@@ -14,19 +14,15 @@ class Terrain  {
 
         int width = 60;
         int height = 60;
-        float dx = 0.45;
-        float dy = 0.0;
+        float dx = 0.0;
+        float dy = 0.40;
 
         float coeffPerlin = 0.5;
         float scaleTerrainPerlin = 2;
 
         float groundLevel = -0.025;
 
-        float scaleOceanPerlin = 25.0;
-        float coeffOcean = 0.01;
-        int offsetXOcean = 0;
-        int offsetYOcean = 0;
-
+        
         OpenGlWrapper _openGlWrapperTerrain;
         OpenGlWrapper _openGlWrapperOcean;
 
@@ -39,13 +35,13 @@ class Terrain  {
             std::uniform_real_distribution<double> paddingTopBottom(0.0, 0.02);
             std::uniform_real_distribution<double> paddingTopBottomOcean(0.0, 0.008);
 
-            const siv::PerlinNoise::seed_type seed = 123456u;
+            const siv::PerlinNoise::seed_type seed = 33456u;
             const siv::PerlinNoise perlin{ seed };
 
             uint32_t indice = 0;
 
-            float di = 0.7f/static_cast<float>(width); // delta i
-            float dj = 0.7f/static_cast<float>(height); // delta j
+            float di = 1.5f/static_cast<float>(width); // delta i
+            float dj = 1.5f/static_cast<float>(height); // delta j
 
             glm::vec3 voxel_color_top = {1.0, 1.0, 1.0};
             glm::vec3 voxel_color_bottom = {0.2, 0.2, 0.2};
@@ -91,43 +87,62 @@ class Terrain  {
 
                         //top
                         _openGlWrapperTerrain._indices.push_back(indice);
+                        _openGlWrapperTerrain._indices.push_back(indice + 4);
                         _openGlWrapperTerrain._indices.push_back(indice + 1);
+                        
+                        _openGlWrapperTerrain._indices.push_back(indice + 4);
+                        _openGlWrapperTerrain._indices.push_back(indice + 5);
+                        _openGlWrapperTerrain._indices.push_back(indice + 1);
+                        
+
+                        //Bottom
                         _openGlWrapperTerrain._indices.push_back(indice + 3);
+                        _openGlWrapperTerrain._indices.push_back(indice + 6);
+                        _openGlWrapperTerrain._indices.push_back(indice + 7);
+                        
+                        _openGlWrapperTerrain._indices.push_back(indice + 6);
+                        _openGlWrapperTerrain._indices.push_back(indice + 3);
+                        _openGlWrapperTerrain._indices.push_back(indice + 2);
+                        
+                        
+                        //front
+                        _openGlWrapperTerrain._indices.push_back(indice);
                         _openGlWrapperTerrain._indices.push_back(indice + 1);
+                        _openGlWrapperTerrain._indices.push_back(indice + 2);
+                        
+                        _openGlWrapperTerrain._indices.push_back(indice);
                         _openGlWrapperTerrain._indices.push_back(indice + 2);
                         _openGlWrapperTerrain._indices.push_back(indice + 3);
                         
-                        //front
-                        _openGlWrapperTerrain._indices.push_back(indice + 3);
-                        _openGlWrapperTerrain._indices.push_back(indice + 2);
-                        _openGlWrapperTerrain._indices.push_back(indice + 7);
-                        _openGlWrapperTerrain._indices.push_back(indice + 2);
-                        _openGlWrapperTerrain._indices.push_back(indice + 6);
-                        _openGlWrapperTerrain._indices.push_back(indice + 7);
-
                         //back
-                        _openGlWrapperTerrain._indices.push_back(indice);
-                        _openGlWrapperTerrain._indices.push_back(indice + 1);
                         _openGlWrapperTerrain._indices.push_back(indice + 4);
-                        _openGlWrapperTerrain._indices.push_back(indice + 1);
+                        _openGlWrapperTerrain._indices.push_back(indice + 6);
                         _openGlWrapperTerrain._indices.push_back(indice + 5);
+                        
                         _openGlWrapperTerrain._indices.push_back(indice + 4);
+                        _openGlWrapperTerrain._indices.push_back(indice + 7);
+                        _openGlWrapperTerrain._indices.push_back(indice + 6);
+                        
 
                         //right
                         _openGlWrapperTerrain._indices.push_back(indice + 1);
-                        _openGlWrapperTerrain._indices.push_back(indice + 2);
-                        _openGlWrapperTerrain._indices.push_back(indice + 5);
-                        _openGlWrapperTerrain._indices.push_back(indice + 2);
                         _openGlWrapperTerrain._indices.push_back(indice + 6);
+                        _openGlWrapperTerrain._indices.push_back(indice + 2);
+                        
+                        _openGlWrapperTerrain._indices.push_back(indice + 6);
+                        _openGlWrapperTerrain._indices.push_back(indice + 1);
                         _openGlWrapperTerrain._indices.push_back(indice + 5);
+                        
 
                         //left
-                        _openGlWrapperTerrain._indices.push_back(indice);
-                        _openGlWrapperTerrain._indices.push_back(indice + 3);
                         _openGlWrapperTerrain._indices.push_back(indice + 4);
                         _openGlWrapperTerrain._indices.push_back(indice + 3);
                         _openGlWrapperTerrain._indices.push_back(indice + 7);
+                        
                         _openGlWrapperTerrain._indices.push_back(indice + 4);
+                        _openGlWrapperTerrain._indices.push_back(indice + 0);
+                        _openGlWrapperTerrain._indices.push_back(indice + 3);
+                        
 
                         indice += 8;
                     // }
@@ -146,11 +161,13 @@ class Terrain  {
             _openGlWrapperOcean._vertices.push_back(Vertex3D{{1,  -1, 0}, {0.5, 0.5, 0.5}});
 
             _openGlWrapperOcean._indices.push_back(0);
+            _openGlWrapperOcean._indices.push_back(2);
             _openGlWrapperOcean._indices.push_back(1);
-            _openGlWrapperOcean._indices.push_back(2);
+            
             _openGlWrapperOcean._indices.push_back(0);
-            _openGlWrapperOcean._indices.push_back(2);
             _openGlWrapperOcean._indices.push_back(3);
+            _openGlWrapperOcean._indices.push_back(2);
+            
             
             _openGlWrapperOcean.updateIndices();
             _openGlWrapperOcean.updateVertices();

@@ -67,6 +67,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CLIP_DISTANCE0);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
+
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
 
@@ -157,6 +161,12 @@ int main()
         // glClearColor(0.2, 0.2, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         terrain.drawMountain();
+
+        shaderCube.use();
+        shaderCube.set("model", model);
+        shaderCube.set("view", view);
+        boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
+        shaderG.use();
         waterfbos.unbindCurrentFrameBuffer();
 
 
@@ -194,11 +204,11 @@ int main()
         shaderWater.set("view", view);
         terrain.drawWater();
 
-        // shaderCube.use();
-        // shaderCube.set("model", model);
-        // shaderCube.set("view", view);
+        shaderCube.use();
+        shaderCube.set("model", model);
+        shaderCube.set("view", view);
 
-        // boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
+        boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         // for (uint i = 0; i < boids.size(); ++i) {
         //     boids[i].update(ctx, boids);
         //     boids[i].draw(glGetUniformLocation(shaderCube.id(), "model"));

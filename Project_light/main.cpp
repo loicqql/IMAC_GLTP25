@@ -43,9 +43,11 @@ int main()
     shadowMapFBO.Init(1280, 720);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    // glFrontFace(GL_CW);
-    // glCullFace(GL_BACK);
-    // glEnable(GL_CULL_FACE);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
+
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
@@ -69,6 +71,8 @@ int main()
     shaderSh.set("projection", projection);
     cam.set("projection", projection);
 
+    glm::vec3 sun = {0.25, 0.5, 0.25};
+
     // Declare your infinite update loop.
     ctx.update = [&]() {
         /*********************************
@@ -89,10 +93,10 @@ int main()
         shaderSh.use();
 
         glm::mat4 model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        glm::mat4 view = glm::lookAt({0.25, 0.5, 0.25}, glm::vec3(0), {0 , 1, 0});
+        glm::mat4 view = glm::lookAt(sun, glm::vec3(0), {0 , 1, 0});
         // glm::mat4 view = glm::lookAt(posCam, glm::vec3(0), {0 , 1, 0});
 
-        projection = glm::ortho<float>(-1,1,-1,1,-1,10);
+        projection = glm::ortho<float>(-0.25,0.25,-0.25,0.25,0,1);
 
         shaderSh.set("projection", projection);
         shaderSh.set("model", model);
