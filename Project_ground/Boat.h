@@ -43,15 +43,18 @@ class Boat {
 
             float coeffRot = 0.01;
 
-            if(ctx.key_is_pressed(GLFW_KEY_S) && ctx.key_is_pressed(GLFW_KEY_L)) {
+            bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_S) || ctx.key_is_pressed(GLFW_KEY_Q);
+            bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_L) || ctx.key_is_pressed(GLFW_KEY_L);
+
+            if(leftIsPressed && rightIsPressed) {
                 speed += 0.00005;
                 rotRouge += coeffRot;
                 rotBleu += coeffRot;
-            }else if(ctx.key_is_pressed(GLFW_KEY_S)) {
+            }else if(leftIsPressed) {
                 _rotation.y += forceRot;
                 rotRouge += coeffRot;
                 speed -= 0.000001;
-            }else if(ctx.key_is_pressed(GLFW_KEY_L)){
+            }else if(rightIsPressed){
                 _rotation.y -= forceRot;
                 rotBleu += coeffRot;
                 speed -= 0.000001;
