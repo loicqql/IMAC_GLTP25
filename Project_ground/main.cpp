@@ -74,9 +74,19 @@ int main()
     glm::mat4 projection = glm::mat4(1.0f);
     projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
 
-    const p6::Shader shader = p6::load_shader(
-        "shaders/camera.vs.glsl",
-        "shaders/camera.fs.glsl"
+    const p6::Shader shaderOr = p6::load_shader(
+        "shaders/terrain.vs.glsl",
+        "shaders/terrainOr.fs.glsl"
+    );
+
+    const p6::Shader shaderAr = p6::load_shader(
+        "shaders/terrain.vs.glsl",
+        "shaders/terrainAr.fs.glsl"
+    );
+
+    const p6::Shader shaderSmall = p6::load_shader(
+        "shaders/terrain.vs.glsl",
+        "shaders/terrainSmall.fs.glsl"
     );
 
     const p6::Shader shaderCube = p6::load_shader(
@@ -89,25 +99,93 @@ int main()
         "shaders/water.fs.glsl"
     );
 
-    const p6::Shader shaderG = p6::load_shader(
-        "shaders/waterG.vs.glsl",
-        "shaders/waterG.fs.glsl"
-    );
-
-    shader.set("projection", projection);
+    shaderOr.set("projection", projection);
+    shaderAr.set("projection", projection);
+    shaderSmall.set("projection", projection);
     shaderCube.set("projection", projection);
     shaderWater.set("projection", projection);
-    shaderG.set("projection", projection);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    waterfbos.check();
-
-    
     glm::vec3 sunColor = {1.0, 1.0, 1.0};
     glm::vec3 sunPosition = {-0.5, 1.0, 0.5};
+
+    GLuint or1 = 0;
+    loadTexture(or1, "assets/textures/or1.png");
+
+    GLuint or2 = 0;
+    loadTexture(or2, "assets/textures/or2.png");
+
+    GLuint or3 = 0;
+    loadTexture(or3, "assets/textures/or3.png");
+
+    GLuint ar1 = 0;
+    loadTexture(ar1, "assets/textures/ar1.png");
+
+    GLuint ar2 = 0;
+    loadTexture(ar2, "assets/textures/ar2.png");
+
+    GLuint ar3 = 0;
+    loadTexture(ar3, "assets/textures/ar3.png");
+
+    GLuint small = 0;
+    loadTexture(small, "assets/textures/small.png");
+
+    shaderWater.use();
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(glGetUniformLocation(shaderWater.id(), "reflectionTexture"), 0);
+    glBindTexture(GL_TEXTURE_2D, waterfbos.getReflectionTexture());
+    
+    glActiveTexture(GL_TEXTURE1);
+    glUniform1i(glGetUniformLocation(shaderWater.id(), "refractionTexture"), 1);
+    glBindTexture(GL_TEXTURE_2D, waterfbos.getRefractionTexture());
+
+    glActiveTexture(GL_TEXTURE2);
+    glUniform1i(glGetUniformLocation(shaderWater.id(), "dudvMap"), 2);
+    glBindTexture(GL_TEXTURE_2D, waterDudvTexture);
+
+    glActiveTexture(GL_TEXTURE3);
+    glUniform1i(glGetUniformLocation(shaderWater.id(), "normalMap"), 3);
+    glBindTexture(GL_TEXTURE_2D, waterNormalTexture);
+
+
+    shaderOr.use();
+    glActiveTexture(GL_TEXTURE4);
+    glUniform1i(glGetUniformLocation(shaderOr.id(), "or1"), 4);
+    glBindTexture(GL_TEXTURE_2D, or1);
+
+    glActiveTexture(GL_TEXTURE5);
+    glUniform1i(glGetUniformLocation(shaderOr.id(), "or2"), 5);
+    glBindTexture(GL_TEXTURE_2D, or2);
+
+    glActiveTexture(GL_TEXTURE6);
+    glUniform1i(glGetUniformLocation(shaderOr.id(), "or3"), 6);
+    glBindTexture(GL_TEXTURE_2D, or3);
+
+    
+
+    shaderAr.use();
+    glActiveTexture(GL_TEXTURE7);
+    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar1"), 7);
+    glBindTexture(GL_TEXTURE_2D, ar1);
+
+    glActiveTexture(GL_TEXTURE8);
+    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar2"), 8);
+    glBindTexture(GL_TEXTURE_2D, ar2);
+
+    glActiveTexture(GL_TEXTURE9);
+    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar3"), 9);
+    glBindTexture(GL_TEXTURE_2D, ar3);
+
+    shaderSmall.use();
+    glActiveTexture(GL_TEXTURE10);
+    glUniform1i(glGetUniformLocation(shaderSmall.id(), "small"), 10);
+    glBindTexture(GL_TEXTURE_2D, small);
+
+    glActiveTexture(GL_TEXTURE11); // ?
+    
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -128,73 +206,97 @@ int main()
         view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
         view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
 
-        shaderG.use();
-        shaderG.set("model", model);
-        shaderG.set("view", view);
-
         // glm::mat4 projectionOrtho = glm::ortho<float>(-1,1,-1,1,-1,10);
         // shaderG.set("projection", projectionOrtho);
 
         //invert pitch cam & render reflection texture
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::vec3 posCamReflection = posCam;
         float distance = 2 * (posCam.y - OCEAN_HEIGHT);
         posCamReflection.y -= distance;
-        shaderG.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
-
-        shaderG.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
+        shaderOr.set("model", model);
+        shaderOr.set("view", view);
+        shaderOr.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderOr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
+        shaderAr.set("model", model);
+        shaderAr.set("view", view);
+        shaderAr.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderAr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
+        shaderSmall.set("model", model);
+        shaderSmall.set("view", view);
+        shaderSmall.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderSmall.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         waterfbos.bindReflectionFrameBuffer();
         // glClearColor(0.2, 0.2, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        terrain.drawMountain();
+
+        shaderOr.use();
+        terrain.drawMountainOr();
+
+        shaderAr.use();
+        terrain.drawMountainAr();
+
+        shaderSmall.use();
+        terrain.drawMountainSmall();
+
         waterfbos.unbindCurrentFrameBuffer();
         
 
         
-        shaderG.set("view", view); // reset cam pos
-
+        shaderOr.set("view", view); // reset cam pos
+        shaderAr.set("view", view);
+        shaderSmall.set("view", view);
 
         //render refraction texture
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shaderG.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
+        shaderOr.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
+        shaderAr.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
+        shaderSmall.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
         waterfbos.bindRefractionFrameBuffer();
         // glClearColor(0.2, 0.2, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        terrain.drawMountain();
+
+        shaderOr.use();
+        terrain.drawMountainOr();
+
+        shaderAr.use();
+        terrain.drawMountainAr();
+
+        shaderSmall.use();
+        terrain.drawMountainSmall();
 
         shaderCube.use();
         shaderCube.set("model", model);
         shaderCube.set("view", view);
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
-        shaderG.use();
         waterfbos.unbindCurrentFrameBuffer();
 
 
         //render to screen
-        shader.use();
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shader.set("model", model);
-        shader.set("view", view);
-        shader.set("plane", glm::vec4(0, -1, 0, 100));
-        shader.set("projection", projection);
-        terrain.drawMountain();
+        shaderOr.set("model", model);
+        shaderOr.set("view", view);
+        shaderOr.set("plane", glm::vec4(0, -1, 0, 100));
+        shaderOr.set("projection", projection);
+        shaderAr.set("model", model);
+        shaderAr.set("view", view);
+        shaderAr.set("plane", glm::vec4(0, -1, 0, 100));
+        shaderAr.set("projection", projection);
+        shaderSmall.set("model", model);
+        shaderSmall.set("view", view);
+        shaderSmall.set("plane", glm::vec4(0, -1, 0, 100));
+        shaderSmall.set("projection", projection);     
+
+        shaderOr.use();
+        terrain.drawMountainOr();
+
+        shaderAr.use();
+        terrain.drawMountainAr();
+
+        shaderSmall.use();
+        terrain.drawMountainSmall();
 
         shaderWater.use();
-        glActiveTexture(GL_TEXTURE0);
-        glUniform1i(glGetUniformLocation(shaderWater.id(), "reflectionTexture"), 0);
-        glBindTexture(GL_TEXTURE_2D, waterfbos.getReflectionTexture());
-        
-        glActiveTexture(GL_TEXTURE1);
-        glUniform1i(glGetUniformLocation(shaderWater.id(), "refractionTexture"), 1);
-        glBindTexture(GL_TEXTURE_2D, waterfbos.getRefractionTexture());
-
-        glActiveTexture(GL_TEXTURE2);
-        glUniform1i(glGetUniformLocation(shaderWater.id(), "dudvMap"), 2);
-        glBindTexture(GL_TEXTURE_2D, waterDudvTexture);
-
-        glActiveTexture(GL_TEXTURE3);
-        glUniform1i(glGetUniformLocation(shaderWater.id(), "normalMap"), 3);
-        glBindTexture(GL_TEXTURE_2D, waterNormalTexture);
 
         shaderWater.set("lightPosition", sunPosition);
         shaderWater.set("lightColor", sunColor);

@@ -9,6 +9,8 @@
 #include "utils.h"
 #include <tuple>
 
+enum Cube { BigOr, BigAr, Small};
+
 class Terrain  {
     private:
 
@@ -23,7 +25,9 @@ class Terrain  {
         float groundLevel = -0.025;
 
         
-        OpenGlWrapper _openGlWrapperTerrain;
+        OpenGlWrapper _openGlWrapperTerrainOr;
+        OpenGlWrapper _openGlWrapperTerrainAr;
+        OpenGlWrapper _openGlWrapperTerrainSmall;
         OpenGlWrapper _openGlWrapperOcean;
 
     public:
@@ -42,7 +46,8 @@ class Terrain  {
             const siv::PerlinNoise::seed_type seedCube = 35u;
             const siv::PerlinNoise perlinCube{ seedCube };
 
-            uint32_t indice = 0;
+            const siv::PerlinNoise::seed_type seedCubeChoice = 33u;
+            const siv::PerlinNoise perlinCubeChoice{ seedCubeChoice };
 
             float di = 0.050; // delta i
             float dj = 0.050; // delta j
@@ -61,28 +66,39 @@ class Terrain  {
 
                         if(z < 0.20 && rand > -0.2) {
                             //cube & cube below
-                            makeCube(i, j, di, dj, z, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), indice);
-                            makeCube(i, j, di, dj, z - di, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), indice);
+                            if(perlinCubeChoice.noise2D(i * 3.0, j * 3.0) > 0) {
+                                makeCube(i, j, di, dj, z, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainOr, Cube::BigOr);
+                                makeCube(i, j, di, dj, z - di, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainOr, Cube::BigOr);
+                            }else {
+                                makeCube(i, j, di, dj, z, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainAr, Cube::BigAr);
+                                makeCube(i, j, di, dj, z - di, di, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainAr, Cube::BigAr);
+                            }
                         }else {
                             float div = 3.0;
                             for(float m = i; m < i + di; m += (di / div)) { // m is the new i
                                 for(float n = j; n < j + dj; n += (dj / div)) { // n is the new j & l is the new z
                                     float l = getZPerlinTerrain(perlin, m, n);
                                     l += offsetZMiniCube(mt);
-                                    makeCube(m, n, (di / div), (dj / div), l, (di / div), l > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), l > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), indice);
-                                    makeCube(m, n, (di / div), (dj / div), l - (di / div), (di / div), l > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), l > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), indice);
+                                    makeCube(m, n, (di / div), (dj / div), l, (di / div), l > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), l > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainSmall, Cube::Small);
+                                    makeCube(m, n, (di / div), (dj / div), l - (di / div), (di / div), l > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), l > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainSmall, Cube::Small);
                                 }
                             }
                         }
                         
                     }else {
-                        makeCube(i, j, di, dj, z, di * 2, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), indice);
+                        makeCube(i, j, di, dj, z, di * 2, z > groundLevel ? color_top : glm::vec3(0.5, 0.5, 0.5), z > groundLevel ? color_bottom : glm::vec3(0.2, 0.2, 0.2), _openGlWrapperTerrainSmall, Cube::Small);
                     }
                 }
             }
 
-            _openGlWrapperTerrain.updateVertices();
-            _openGlWrapperTerrain.updateIndices();
+            _openGlWrapperTerrainOr.updateVertices();
+            _openGlWrapperTerrainOr.updateTextures();
+
+            _openGlWrapperTerrainAr.updateVertices();
+            _openGlWrapperTerrainAr.updateTextures();
+
+            _openGlWrapperTerrainSmall.updateVertices();
+            _openGlWrapperTerrainSmall.updateTextures();
         }
 
         void initOcean() {
@@ -100,13 +116,17 @@ class Terrain  {
             _openGlWrapperOcean._indices.push_back(3);
             _openGlWrapperOcean._indices.push_back(2);
             
-            
-            _openGlWrapperOcean.updateIndices();
             _openGlWrapperOcean.updateVertices();
         }
 
-        void drawMountain() const {
-            _openGlWrapperTerrain.draw();
+        void drawMountainOr() const {
+            _openGlWrapperTerrainOr.draw();
+        }
+        void drawMountainAr() const {
+            _openGlWrapperTerrainAr.draw();
+        }
+        void drawMountainSmall() const {
+            _openGlWrapperTerrainSmall.draw();
         }
         void drawWater() const {
             _openGlWrapperOcean.draw();
@@ -114,81 +134,99 @@ class Terrain  {
 
     private : 
 
-        void makeCube(float x, float y, float dx, float dy, float z, float height, glm::vec3 colorTop, glm::vec3 colorBottom, uint &indice) {
+        void makeCube(float x, float y, float dx, float dy, float z, float height, glm::vec3 colorTop, glm::vec3 colorBottom, OpenGlWrapper &wrapper, Cube type) {
+
+            uint indice = wrapper._indice;
 
             //top
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x,  y, z + height / 2.0}, colorTop});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x + dx,  y, z + height / 2.0}, colorTop});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x + dx,  y + dy, z + height / 2.0}, colorTop});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x,  y + dy, z + height / 2.0}, colorTop});
+            wrapper._vertices.push_back(Vertex3D{{x,  y, z + height / 2.0}, colorTop});
+            wrapper._vertices.push_back(Vertex3D{{x + dx,  y, z + height / 2.0}, colorTop});
+            wrapper._vertices.push_back(Vertex3D{{x + dx,  y + dy, z + height / 2.0}, colorTop});
+            wrapper._vertices.push_back(Vertex3D{{x,  y + dy, z + height / 2.0}, colorTop});
 
             //bottom
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x,  y, z - height / 2.0}, colorBottom});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x + dx,  y, z - height / 2.0}, colorBottom});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x + dx,  y + dy, z - height / 2.0}, colorBottom});
-            _openGlWrapperTerrain._vertices.push_back(Vertex3D{{x,  y + dy, z - height / 2.0}, colorBottom});
+            wrapper._vertices.push_back(Vertex3D{{x,  y, z - height / 2.0}, colorBottom});
+            wrapper._vertices.push_back(Vertex3D{{x + dx,  y, z - height / 2.0}, colorBottom});
+            wrapper._vertices.push_back(Vertex3D{{x + dx,  y + dy, z - height / 2.0}, colorBottom});
+            wrapper._vertices.push_back(Vertex3D{{x,  y + dy, z - height / 2.0}, colorBottom});
 
 
             //top
-            _openGlWrapperTerrain._indices.push_back(indice);
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 1);
-            
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 5);
-            _openGlWrapperTerrain._indices.push_back(indice + 1);
-            
+            wrapper._indices.push_back(indice);
+            wrapper._indices.push_back(indice + 4);
+            wrapper._indices.push_back(indice + 5);
+            wrapper._indices.push_back(indice + 5);
+            wrapper._indices.push_back(indice + 1);
+            wrapper._indices.push_back(indice + 0);            
 
             //Bottom
-            _openGlWrapperTerrain._indices.push_back(indice + 3);
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
-            _openGlWrapperTerrain._indices.push_back(indice + 7);
-            
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
-            _openGlWrapperTerrain._indices.push_back(indice + 3);
-            _openGlWrapperTerrain._indices.push_back(indice + 2);
-            
+            wrapper._indices.push_back(indice + 3);
+            wrapper._indices.push_back(indice + 2);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 7);
+            wrapper._indices.push_back(indice + 3);            
             
             //front
-            _openGlWrapperTerrain._indices.push_back(indice);
-            _openGlWrapperTerrain._indices.push_back(indice + 1);
-            _openGlWrapperTerrain._indices.push_back(indice + 2);
-            
-            _openGlWrapperTerrain._indices.push_back(indice);
-            _openGlWrapperTerrain._indices.push_back(indice + 2);
-            _openGlWrapperTerrain._indices.push_back(indice + 3);
+            wrapper._indices.push_back(indice);
+            wrapper._indices.push_back(indice + 1);
+            wrapper._indices.push_back(indice + 2);
+            wrapper._indices.push_back(indice + 2);
+            wrapper._indices.push_back(indice + 3);
+            wrapper._indices.push_back(indice);
             
             //back
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
-            _openGlWrapperTerrain._indices.push_back(indice + 5);
-            
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 7);
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 4);
+            wrapper._indices.push_back(indice + 7);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 5);
+            wrapper._indices.push_back(indice + 4);
             
 
             //right
-            _openGlWrapperTerrain._indices.push_back(indice + 1);
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
-            _openGlWrapperTerrain._indices.push_back(indice + 2);
-            
-            _openGlWrapperTerrain._indices.push_back(indice + 6);
-            _openGlWrapperTerrain._indices.push_back(indice + 1);
-            _openGlWrapperTerrain._indices.push_back(indice + 5);
-            
+            wrapper._indices.push_back(indice + 1);
+            wrapper._indices.push_back(indice + 5);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 6);
+            wrapper._indices.push_back(indice + 2);
+            wrapper._indices.push_back(indice + 1);            
 
             //left
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 3);
-            _openGlWrapperTerrain._indices.push_back(indice + 7);
-            
-            _openGlWrapperTerrain._indices.push_back(indice + 4);
-            _openGlWrapperTerrain._indices.push_back(indice + 0);
-            _openGlWrapperTerrain._indices.push_back(indice + 3);
-            
+            wrapper._indices.push_back(indice + 4);
+            wrapper._indices.push_back(indice);
+            wrapper._indices.push_back(indice + 3);
+            wrapper._indices.push_back(indice + 3);
+            wrapper._indices.push_back(indice + 7);
+            wrapper._indices.push_back(indice + 4);
 
-            indice += 8;
+            std::random_device rd;
+            std::mt19937 mt(rd());
+            std::uniform_int_distribution<> distrib(0, 1);
+
+            for (int i = 0; i < 6; ++i) {
+
+                glm::vec2 texId = {0.0, 0.0};
+
+                if(type == Cube::BigOr) {
+                    int id = distrib(mt);
+                    texId[id] = distrib(mt);
+
+                }else if(type == Cube::BigAr) {
+                    int id = distrib(mt);
+                    texId[id] = distrib(mt);
+                }
+
+                wrapper._textures.push_back(TextureCube{{1.0f, 1.0f}, texId});
+                wrapper._textures.push_back(TextureCube{{1.0f, 0.0f}, texId});
+                wrapper._textures.push_back(TextureCube{{0.0f, 0.0f}, texId});
+                wrapper._textures.push_back(TextureCube{{0.0f, 0.0f}, texId});
+                wrapper._textures.push_back(TextureCube{{0.0f, 1.0f}, texId});
+                wrapper._textures.push_back(TextureCube{{1.0f, 1.0f}, texId});
+            }
+            
+            
+            wrapper._indice += 8;
         }
 
         float getZPerlinTerrain(siv::PerlinNoise perlin, float x, float y) const {
