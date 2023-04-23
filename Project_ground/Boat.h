@@ -28,6 +28,7 @@ class Boat {
         void init() {
 
             _position = {0.5, 0, 0.1};
+            // _position = {-1, 0, -1};
             _rotation = {0, 0, 0};
 
             main.load("./assets/models/boat/boat.gltf");
@@ -39,7 +40,8 @@ class Boat {
         void update(p6::Context &ctx) {
 
             float forceRot = 0.01;
-            float limit = 0.0017; 
+            // float limit = 0.0017; 
+            float limit = 0.17; // dev
 
             float coeffRot = 0.01;
 
@@ -68,9 +70,12 @@ class Boat {
                 speed = 0.0;
             }
 
-            if(speed > 0.0) {
-                speed -= 0.00001;
-            }
+            if(!(leftIsPressed && rightIsPressed)) {
+                if(speed > 0.0) {
+                    speed -= 0.0001;
+                    // speed -= 0.00001;
+                }
+            }            
 
             this->_position = {glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z};
         }

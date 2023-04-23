@@ -18,8 +18,7 @@
 #include "Boid/Boid.h"
 
 #include "Water/WaterFrameBuffers.h"
-
-#include <fstream>
+#include "Shadow/shadow_map_fbo.h"
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
@@ -54,6 +53,9 @@ int main()
 
     WaterFrameBuffers waterfbos;
 
+    ShadowMapFBO shadowMapFBO;
+    shadowMapFBO.Init(1280, 720);
+
     GLuint waterDudvTexture = 0;
     loadTexture(waterDudvTexture, "assets/waterDUDV.png");
     GLuint waterNormalTexture = 0;
@@ -62,7 +64,7 @@ int main()
     const float WAVE_SPEED = 0.05f;
     float moveWater = 0;
 
-    // glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CLIP_DISTANCE0);
@@ -99,18 +101,23 @@ int main()
         "shaders/water.fs.glsl"
     );
 
+    const p6::Shader shaderShadowGen = p6::load_shader(
+        "shaders/shadow_gen.vs.glsl",
+        "shaders/shadow_gen.fs.glsl"
+    );
+
     shaderOr.set("projection", projection);
     shaderAr.set("projection", projection);
     shaderSmall.set("projection", projection);
     shaderCube.set("projection", projection);
     shaderWater.set("projection", projection);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glm::vec3 sunColor = {1.0, 1.0, 1.0};
-    glm::vec3 sunPosition = {-0.5, 1.0, 0.5};
+    glm::vec3 sunPosition = {-0.5, 0.2, -0.5};
 
     GLuint or1 = 0;
     loadTexture(or1, "assets/textures/or1.png");
@@ -164,8 +171,6 @@ int main()
     glUniform1i(glGetUniformLocation(shaderOr.id(), "or3"), 6);
     glBindTexture(GL_TEXTURE_2D, or3);
 
-    
-
     shaderAr.use();
     glActiveTexture(GL_TEXTURE7);
     glUniform1i(glGetUniformLocation(shaderAr.id(), "ar1"), 7);
@@ -184,13 +189,23 @@ int main()
     glUniform1i(glGetUniformLocation(shaderSmall.id(), "small"), 10);
     glBindTexture(GL_TEXTURE_2D, small);
 
-    glActiveTexture(GL_TEXTURE11); // ?
-    
+    shadowMapFBO.BindForReading(GL_TEXTURE11);
+    glUniform1i(glGetUniformLocation(shaderSmall.id(), "gShadowMap"), 11);
+
+    shaderAr.use();
+    shadowMapFBO.BindForReading(GL_TEXTURE12);
+    glUniform1i(glGetUniformLocation(shaderAr.id(), "gShadowMap"), 12);
+
+    shaderOr.use();
+    shadowMapFBO.BindForReading(GL_TEXTURE13);
+    glUniform1i(glGetUniformLocation(shaderOr.id(), "gShadowMap"), 13);
+
+    glActiveTexture(GL_TEXTURE14); // ? 
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const float OCEAN_HEIGHT = 0.f;
 
@@ -203,11 +218,37 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
-        view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
+        // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
 
-        // glm::mat4 projectionOrtho = glm::ortho<float>(-1,1,-1,1,-1,10);
-        // shaderG.set("projection", projectionOrtho);
+        //GEN Shadow
+        shadowMapFBO.BindForWriting();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glCullFace(GL_BACK);
+
+        shaderShadowGen.use();
+
+        view = glm::lookAt(sunPosition, glm::vec3(0), {0 , 1, 0});
+        glm::mat4 shadowProj = glm::ortho<float>(-1,1,-1,1,-1,1);
+
+        shaderShadowGen.set("projection", shadowProj);
+        shaderShadowGen.set("model", model);
+        shaderShadowGen.set("view", view);
+
+        terrain.drawMountainOr();  
+        terrain.drawMountainAr();
+        terrain.drawMountainSmall();
+
+        glm::mat4 DepthMVP = shadowProj * view * model;
+
+        shaderOr.set("DepthMVP", DepthMVP);
+        shaderAr.set("DepthMVP", DepthMVP);
+        shaderSmall.set("DepthMVP", DepthMVP);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        //reset view
+        view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
+        glCullFace(GL_FRONT);
 
         //invert pitch cam & render reflection texture
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -6,6 +6,7 @@ layout (location = 2) in vec2 aTexCoord;
 layout (location = 3) in vec2 aTexId;
 
 out vec3 vColor;
+out vec4 LightSpacePos;
 
 out vec2 vTexCoord;
 flat out vec2 vTexId;
@@ -15,6 +16,8 @@ uniform mat4 view;
 uniform mat4 projection;
 
 uniform vec4 plane;
+
+uniform mat4 DepthMVP;
 
 void main()
 {
@@ -26,4 +29,5 @@ void main()
 	vTexCoord = aTexCoord;
 	vTexId = aTexId;
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	LightSpacePos = DepthMVP * vec4(aPos,1);
 }
