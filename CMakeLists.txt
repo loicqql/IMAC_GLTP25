@@ -55,8 +55,8 @@ add_exercise(TP3_exo4_circle)
 add_exercise(TP4_shaders_grey2d)
 
 
-add_exercise(Project)
-add_exercise(Project_ground)
-add_exercise(Project_water)
-add_exercise(Project_light)
-add_exercise(Project_texture)
+add_exercise(Project_boids)
+add_exercise(Project_opengl)
+add_exercise(Test_water)
+add_exercise(Test_light)
+add_exercise(Test_texture)
