@@ -19,14 +19,13 @@
 
 #include "p6/p6.h"
 
-class ShadowMapFBO
-{
+class ShadowMapFBO {
 public:
     ShadowMapFBO();
 
     ~ShadowMapFBO();
 
-    bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
+    bool Init();
 
     void BindForWriting();
 
@@ -35,5 +34,7 @@ public:
 private:
     GLuint m_fbo;
     GLuint m_shadowMap;
-};
 
+    int SHADOW_WIDTH = 4096;
+    int SHADOW_HEIGHT = 4096;
+};

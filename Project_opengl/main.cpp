@@ -1,8 +1,8 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float3.hpp"
+#include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
-#include "glm/glm.hpp"
 
 #include <cmath>
 
@@ -10,21 +10,20 @@
 
 #include "glimac/default_shader.hpp"
 
-#include "Vertex3D.h"
-#include "camera.h"
 #include "Boat.h"
 #include "Terrain.h"
+#include "Vertex3D.h"
+#include "camera.h"
 
 #include "Boid/Boid.h"
 
-#include "Water/WaterFrameBuffers.h"
 #include "Shadow/shadow_map_fbo.h"
+#include "Water/WaterFrameBuffers.h"
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
-int main()
-{
-    auto ctx = p6::Context{{1280, 720, "Project Ground"}};
+int main() {
+    auto ctx = p6::Context { { 1280, 720, "Project Ground" } };
     // ctx.maximize_window();
 
     std::random_device rd;
@@ -40,7 +39,6 @@ int main()
     //     boids[i].init();
     // }
 
-
     Camera camera = Camera();
     camera.init();
 
@@ -54,7 +52,7 @@ int main()
     WaterFrameBuffers waterfbos;
 
     ShadowMapFBO shadowMapFBO;
-    shadowMapFBO.Init(1280, 720);
+    shadowMapFBO.Init();
 
     GLuint waterDudvTexture = 0;
     loadTexture(waterDudvTexture, "assets/waterDUDV.png");
@@ -78,33 +76,27 @@ int main()
 
     const p6::Shader shaderOr = p6::load_shader(
         "shaders/terrain.vs.glsl",
-        "shaders/terrainOr.fs.glsl"
-    );
+        "shaders/terrainOr.fs.glsl");
 
     const p6::Shader shaderAr = p6::load_shader(
         "shaders/terrain.vs.glsl",
-        "shaders/terrainAr.fs.glsl"
-    );
+        "shaders/terrainAr.fs.glsl");
 
     const p6::Shader shaderSmall = p6::load_shader(
         "shaders/terrain.vs.glsl",
-        "shaders/terrainSmall.fs.glsl"
-    );
+        "shaders/terrainSmall.fs.glsl");
 
     const p6::Shader shaderCube = p6::load_shader(
         "shaders/cube.vs.glsl",
-        "shaders/cube.fs.glsl"
-    );
+        "shaders/cube.fs.glsl");
 
     const p6::Shader shaderWater = p6::load_shader(
         "shaders/water.vs.glsl",
-        "shaders/water.fs.glsl"
-    );
+        "shaders/water.fs.glsl");
 
     const p6::Shader shaderShadowGen = p6::load_shader(
         "shaders/shadow_gen.vs.glsl",
-        "shaders/shadow_gen.fs.glsl"
-    );
+        "shaders/shadow_gen.fs.glsl");
 
     shaderOr.set("projection", projection);
     shaderAr.set("projection", projection);
@@ -116,35 +108,35 @@ int main()
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    glm::vec3 sunColor = {1.0, 1.0, 1.0};
-    glm::vec3 sunPosition = {-0.5, 0.2, -0.5};
+    glm::vec3 sunColor = { 1.0, 1.0, 1.0 };
+    glm::vec3 sunPosition = { -0.5, 0.5, -0.5 };
 
     GLuint or1 = 0;
-    loadTexture(or1, "assets/textures/or1.png");
+    loadTexture(or1, "assets/textures/or1grain.png");
 
     GLuint or2 = 0;
-    loadTexture(or2, "assets/textures/or2.png");
+    loadTexture(or2, "assets/textures/or2grain.png");
 
     GLuint or3 = 0;
-    loadTexture(or3, "assets/textures/or3.png");
+    loadTexture(or3, "assets/textures/or3grain.png");
 
     GLuint ar1 = 0;
-    loadTexture(ar1, "assets/textures/ar1.png");
+    loadTexture(ar1, "assets/textures/ar1grain.png");
 
     GLuint ar2 = 0;
-    loadTexture(ar2, "assets/textures/ar2.png");
+    loadTexture(ar2, "assets/textures/ar2grain.png");
 
     GLuint ar3 = 0;
-    loadTexture(ar3, "assets/textures/ar3.png");
+    loadTexture(ar3, "assets/textures/ar3grain.png");
 
     GLuint small = 0;
-    loadTexture(small, "assets/textures/small.png");
+    loadTexture(small, "assets/textures/smallgrain.png");
 
     shaderWater.use();
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(glGetUniformLocation(shaderWater.id(), "reflectionTexture"), 0);
     glBindTexture(GL_TEXTURE_2D, waterfbos.getReflectionTexture());
-    
+
     glActiveTexture(GL_TEXTURE1);
     glUniform1i(glGetUniformLocation(shaderWater.id(), "refractionTexture"), 1);
     glBindTexture(GL_TEXTURE_2D, waterfbos.getRefractionTexture());
@@ -156,7 +148,6 @@ int main()
     glActiveTexture(GL_TEXTURE3);
     glUniform1i(glGetUniformLocation(shaderWater.id(), "normalMap"), 3);
     glBindTexture(GL_TEXTURE_2D, waterNormalTexture);
-
 
     shaderOr.use();
     glActiveTexture(GL_TEXTURE4);
@@ -200,11 +191,12 @@ int main()
     shadowMapFBO.BindForReading(GL_TEXTURE13);
     glUniform1i(glGetUniformLocation(shaderOr.id(), "gShadowMap"), 13);
 
-    glActiveTexture(GL_TEXTURE14); // ? 
+    glActiveTexture(GL_TEXTURE14); // ?
+
+    glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
-
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         const float OCEAN_HEIGHT = 0.f;
@@ -223,18 +215,17 @@ int main()
         //GEN Shadow
         shadowMapFBO.BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
-        glCullFace(GL_BACK);
+        // glCullFace(GL_BACK);
 
         shaderShadowGen.use();
 
-        view = glm::lookAt(sunPosition, glm::vec3(0), {0 , 1, 0});
-        glm::mat4 shadowProj = glm::ortho<float>(-1,1,-1,1,-1,1);
+        view = glm::lookAt(sunPosition, glm::vec3(0), { 0, 1, 0 });
 
         shaderShadowGen.set("projection", shadowProj);
         shaderShadowGen.set("model", model);
         shaderShadowGen.set("view", view);
 
-        terrain.drawMountainOr();  
+        terrain.drawMountainOr();
         terrain.drawMountainAr();
         terrain.drawMountainSmall();
 
@@ -245,9 +236,10 @@ int main()
         shaderSmall.set("DepthMVP", DepthMVP);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, 1280, 720);
 
         //reset view
-        view = glm::lookAt(posCam, boat.getPos(), {0 , 1, 0});
+        view = glm::lookAt(posCam, boat.getPos(), { 0, 1, 0 });
         glCullFace(GL_FRONT);
 
         //invert pitch cam & render reflection texture
@@ -257,15 +249,15 @@ int main()
         posCamReflection.y -= distance;
         shaderOr.set("model", model);
         shaderOr.set("view", view);
-        shaderOr.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderOr.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
         shaderOr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         shaderAr.set("model", model);
         shaderAr.set("view", view);
-        shaderAr.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderAr.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
         shaderAr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         shaderSmall.set("model", model);
         shaderSmall.set("view", view);
-        shaderSmall.set("view", glm::lookAt(posCamReflection, boat.getPos(), {0 , 1, 0}));
+        shaderSmall.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
         shaderSmall.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         waterfbos.bindReflectionFrameBuffer();
         // glClearColor(0.2, 0.2, 0.8, 1.0);
@@ -281,9 +273,7 @@ int main()
         terrain.drawMountainSmall();
 
         waterfbos.unbindCurrentFrameBuffer();
-        
 
-        
         shaderOr.set("view", view); // reset cam pos
         shaderAr.set("view", view);
         shaderSmall.set("view", view);
@@ -312,7 +302,6 @@ int main()
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         waterfbos.unbindCurrentFrameBuffer();
 
-
         //render to screen
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shaderOr.set("model", model);
@@ -326,7 +315,7 @@ int main()
         shaderSmall.set("model", model);
         shaderSmall.set("view", view);
         shaderSmall.set("plane", glm::vec4(0, -1, 0, 100));
-        shaderSmall.set("projection", projection);     
+        shaderSmall.set("projection", projection);
 
         shaderOr.use();
         terrain.drawMountainOr();
@@ -356,8 +345,6 @@ int main()
         //     boids[i].update(ctx, boids);
         //     boids[i].draw(glGetUniformLocation(shaderCube.id(), "model"));
         // }
-
-
     };
 
     // Should be done last. It starts the infinite loop.
@@ -365,5 +352,4 @@ int main()
 
     // glDeleteBuffers(1, &vbo);
     // glDeleteVertexArrays(1, &vao);
-    
 }

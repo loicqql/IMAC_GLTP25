@@ -24,9 +24,19 @@ void main() {
     float z = 0.5 * ProjCoords.z + 0.5;
     float Depth = texture(gShadowMap, UVCoords).x;
     
-    float bias = 0.005;
+    float bias = 0.0003;
+    float visibility = 0.0;
+    vec2 poissonDisk[4] = vec2[](
+        vec2( -0.09420163, -0.03990622 ),
+        vec2( 0.094558609, -0.07689073 ),
+        vec2( -0.009418411, -0.0929389 ),
+        vec2( 0.03449594, 0.02938777 )
+    );
 
-    if(Depth + bias < z) {
-        fFragColor = fFragColor - vec4(1) * 0.2;
+    for (int i=0;i<2;i++){
+        if (texture(gShadowMap, UVCoords + poissonDisk[i]/700.0 ).x  + bias < z) {
+            visibility += 0.05;
+        }
     }
+    fFragColor = fFragColor - vec4(1) * visibility;
 }

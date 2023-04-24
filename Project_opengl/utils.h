@@ -1,9 +1,9 @@
 #pragma once
 #include "glm/geometric.hpp"
-#include <glm/glm.hpp>
 #include "p6/p6.h"
+#include <glm/glm.hpp>
 
-inline void vec3_limit(glm::vec3 &vec, glm::vec3 limit) {
+inline void vec3_limit(glm::vec3& vec, glm::vec3 limit) {
     vec.x = vec.x > limit.x ? limit.x : vec.x;
     vec.y = vec.y > limit.y ? limit.y : vec.y;
     vec.z = vec.z > limit.z ? limit.z : vec.z;
@@ -14,9 +14,9 @@ inline void vec3_limit(glm::vec3 &vec, glm::vec3 limit) {
 }
 
 inline float float_limit(float f, float limit, bool floor) {
-    if(floor) {
+    if (floor) {
         f = f > limit ? f : limit;
-    }else {
+    } else {
         f = f < limit ? f : limit;
     }
 
@@ -37,7 +37,7 @@ inline glm::vec3 color_map(float x, float x_min, float x_max, glm::vec3 color_mi
     return glm::vec3(float_map(_x, color_max.x, color_min.x), float_map(_x, color_max.y, color_min.y), float_map(_x, color_max.z, color_min.z));
 }
 
-void loadTexture(GLuint &textureId, auto filename) {
+void loadTexture(GLuint& textureId, auto filename) {
     const img::Image image = p6::load_image_buffer(filename);
 
     glGenTextures(1, &textureId);

@@ -2,7 +2,7 @@
 
 WaterFrameBuffers::WaterFrameBuffers() {
     initialiseReflectionFrameBuffer();
-	initialiseRefractionFrameBuffer();
+    initialiseRefractionFrameBuffer();
 }
 
 WaterFrameBuffers::~WaterFrameBuffers() {
@@ -29,7 +29,7 @@ void WaterFrameBuffers::bindRefractionFrameBuffer() {
 
 void WaterFrameBuffers::unbindCurrentFrameBuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1280, 720);
+    glViewport(0, 0, 1280, 720);
 }
 
 GLuint WaterFrameBuffers::getReflectionTexture() const {
@@ -46,10 +46,10 @@ GLuint WaterFrameBuffers::getRefractionDepthTexture() const {
 
 void WaterFrameBuffers::initialiseReflectionFrameBuffer() {
     reflectionFrameBuffer = createFrameBuffer();
-    reflectionTexture = createTextureAttachment(REFLECTION_WIDTH,REFLECTION_HEIGHT);
+    reflectionTexture = createTextureAttachment(REFLECTION_WIDTH, REFLECTION_HEIGHT);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
-    reflectionDepthBuffer = createDepthBufferAttachment(REFLECTION_WIDTH,REFLECTION_HEIGHT);
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    reflectionDepthBuffer = createDepthBufferAttachment(REFLECTION_WIDTH, REFLECTION_HEIGHT);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cout << "Error on ReflectionFrameBuffer" << std::endl;
     }
     unbindCurrentFrameBuffer();
@@ -57,16 +57,16 @@ void WaterFrameBuffers::initialiseReflectionFrameBuffer() {
 
 void WaterFrameBuffers::initialiseRefractionFrameBuffer() {
     refractionFrameBuffer = createFrameBuffer();
-    refractionTexture = createTextureAttachment(REFRACTION_WIDTH,REFRACTION_HEIGHT);
+    refractionTexture = createTextureAttachment(REFRACTION_WIDTH, REFRACTION_HEIGHT);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
-    refractionDepthTexture = createDepthTextureAttachment(REFRACTION_WIDTH,REFRACTION_HEIGHT);
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    refractionDepthTexture = createDepthTextureAttachment(REFRACTION_WIDTH, REFRACTION_HEIGHT);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cout << "Error on RefractionFrameBuffer" << std::endl;
     }
     unbindCurrentFrameBuffer();
 }
 
-void WaterFrameBuffers::bindFrameBuffer(GLuint frameBuffer, int width, int height){
+void WaterFrameBuffers::bindFrameBuffer(GLuint frameBuffer, int width, int height) {
     glBindTexture(GL_TEXTURE_2D, 0); //To make sure the texture isn't bound
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glViewport(0, 0, width, height);
@@ -97,7 +97,7 @@ GLuint WaterFrameBuffers::createTextureAttachment(int width, int height) {
     return texture;
 }
 
-GLuint WaterFrameBuffers::createDepthTextureAttachment(int width, int height){
+GLuint WaterFrameBuffers::createDepthTextureAttachment(int width, int height) {
     GLuint texture = 0;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);

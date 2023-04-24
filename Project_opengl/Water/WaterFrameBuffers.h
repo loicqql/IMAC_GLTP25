@@ -20,14 +20,13 @@ public:
     void check() const;
 
 private:
-
     // int REFLECTION_WIDTH = 320;
-	// int REFLECTION_HEIGHT = 180;
+    // int REFLECTION_HEIGHT = 180;
     int REFLECTION_WIDTH = 1280;
-	int REFLECTION_HEIGHT = 720;
-	
-	int REFRACTION_WIDTH = 1280;
-	int REFRACTION_HEIGHT = 720;
+    int REFLECTION_HEIGHT = 720;
+
+    int REFRACTION_WIDTH = 1280;
+    int REFRACTION_HEIGHT = 720;
 
     GLuint reflectionFrameBuffer = 0;
     GLuint reflectionTexture = 0;
@@ -37,7 +36,6 @@ private:
     GLuint refractionTexture = 0;
     GLuint refractionDepthTexture = 0;
 
-    
     void initialiseReflectionFrameBuffer();
     void initialiseRefractionFrameBuffer();
 
@@ -47,6 +45,4 @@ private:
     GLuint createTextureAttachment(int width, int height);
     GLuint createDepthTextureAttachment(int width, int height);
     GLuint createDepthBufferAttachment(int width, int height);
-
 };
-
