@@ -17,31 +17,19 @@
 
 #include <stdio.h>
 
-#include "shadow_map_fbo.h"
+#include "ShadowFrameBuffers.h"
 
-ShadowMapFBO::ShadowMapFBO() {
-    m_fbo = 0;
-    m_shadowMap = 0;
-}
+ShadowFrameBuffers::ShadowFrameBuffers() {
+    fbo = 0;
+    shadowMap = 0;
 
-ShadowMapFBO::~ShadowMapFBO() {
-    if (m_fbo != 0) {
-        glDeleteFramebuffers(1, &m_fbo);
-    }
-
-    if (m_shadowMap != 0) {
-        glDeleteTextures(1, &m_shadowMap);
-    }
-}
-
-bool ShadowMapFBO::Init() {
     // Create the FBO
-    glGenFramebuffers(1, &m_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     // Create the depth buffer
-    glGenTextures(1, &m_shadowMap);
-    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+    glGenTextures(1, &shadowMap);
+    glBindTexture(GL_TEXTURE_2D, shadowMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -53,30 +41,35 @@ bool ShadowMapFBO::Init() {
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE); // ?
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMap, 0);
     // glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
 
     // Disable writes to the color buffer
     glDrawBuffer(GL_NONE);
-    // glReadBuffer(GL_NONE);
 
     GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         printf("FB error, status: 0x%x\n", Status);
-        return false;
     }
-
-    return true;
 }
 
-void ShadowMapFBO::BindForWriting() {
+ShadowFrameBuffers::~ShadowFrameBuffers() {
+    if (fbo != 0) {
+        glDeleteFramebuffers(1, &fbo);
+    }
+
+    if (shadowMap != 0) {
+        glDeleteTextures(1, &shadowMap);
+    }
+}
+
+void ShadowFrameBuffers::BindForWriting() const {
     // glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 }
 
-void ShadowMapFBO::BindForReading(GLenum TextureUnit) {
-    glActiveTexture(TextureUnit);
-    glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+GLuint ShadowFrameBuffers::getShadowTexture() const {
+    return shadowMap;
 }

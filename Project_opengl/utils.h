@@ -37,11 +37,13 @@ inline glm::vec3 color_map(float x, float x_min, float x_max, glm::vec3 color_mi
     return glm::vec3(float_map(_x, color_max.x, color_min.x), float_map(_x, color_max.y, color_min.y), float_map(_x, color_max.z, color_min.z));
 }
 
-void loadTexture(GLuint& textureId, auto filename) {
-    const img::Image image = p6::load_image_buffer(filename);
+GLuint loadTexture(auto texture_path) {
+    const img::Image image = p6::load_image_buffer(texture_path);
 
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    GLuint texture_id = 0;
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -51,4 +53,20 @@ void loadTexture(GLuint& textureId, auto filename) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    return texture_id;
+}
+
+void loadAndBindTexture(const p6::Shader& shader, std::filesystem::path file_path, auto uniform_name, GLuint& texture_unit) {
+    texture_unit++;
+    glActiveTexture(GL_TEXTURE0 + texture_unit);
+    glUniform1i(glGetUniformLocation(shader.id(), uniform_name), texture_unit);
+    glBindTexture(GL_TEXTURE_2D, loadTexture(file_path));
+}
+
+void bindTexture(const p6::Shader& shader, GLuint texture_id, auto uniform_name, GLuint& texture_unit) {
+    texture_unit++;
+    glActiveTexture(GL_TEXTURE0 + texture_unit);
+    glUniform1i(glGetUniformLocation(shader.id(), uniform_name), texture_unit);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
 }

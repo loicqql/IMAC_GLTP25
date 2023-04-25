@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glm/fwd.hpp"
+#include <glm/glm.hpp>
 
 struct Vertex3D {
     glm::vec3 position;

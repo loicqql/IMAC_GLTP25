@@ -4,20 +4,21 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 
+#include "./utils.h"
+
 #include <cmath>
 
 #include "p6/p6.h"
 
 #include "glimac/default_shader.hpp"
 
-#include "Boat.h"
-#include "Terrain.h"
-#include "Vertex3D.h"
-#include "camera.h"
-
+#include "Boat/Boat.h"
 #include "Boid/Boid.h"
+#include "Camera/Camera.h"
+#include "Terrain/Terrain.h"
+#include "Vertex3D.h"
 
-#include "Shadow/shadow_map_fbo.h"
+#include "Shadow/ShadowFrameBuffers.h"
 #include "Water/WaterFrameBuffers.h"
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
@@ -39,25 +40,13 @@ int main() {
     //     boids[i].init();
     // }
 
-    Camera camera = Camera();
-    camera.init();
-
+    Camera camera;
     Boat boat;
-    boat.init();
-
     Terrain terrain;
-    terrain.initTerrain();
-    terrain.initOcean();
-
     WaterFrameBuffers waterfbos;
+    ShadowFrameBuffers shadowMap;
 
-    ShadowMapFBO shadowMapFBO;
-    shadowMapFBO.Init();
-
-    GLuint waterDudvTexture = 0;
-    loadTexture(waterDudvTexture, "assets/waterDUDV.png");
-    GLuint waterNormalTexture = 0;
-    loadTexture(waterNormalTexture, "assets/waterNormalMap.png");
+    // ShadersManager shadersManager;
 
     const float WAVE_SPEED = 0.05f;
     float moveWater = 0;
@@ -98,11 +87,15 @@ int main() {
         "shaders/shadow_gen.vs.glsl",
         "shaders/shadow_gen.fs.glsl");
 
-    shaderOr.set("projection", projection);
-    shaderAr.set("projection", projection);
-    shaderSmall.set("projection", projection);
-    shaderCube.set("projection", projection);
-    shaderWater.set("projection", projection);
+    auto setAllUniform = [&](auto uniform_name, auto value) {
+        shaderOr.set(uniform_name, value);
+        shaderAr.set(uniform_name, value);
+        shaderSmall.set(uniform_name, value);
+        shaderCube.set(uniform_name, value);
+        shaderWater.set(uniform_name, value);
+    };
+
+    setAllUniform("projection", projection);
 
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -111,87 +104,29 @@ int main() {
     glm::vec3 sunColor = { 1.0, 1.0, 1.0 };
     glm::vec3 sunPosition = { -0.5, 0.5, -0.5 };
 
-    GLuint or1 = 0;
-    loadTexture(or1, "assets/textures/or1grain.png");
-
-    GLuint or2 = 0;
-    loadTexture(or2, "assets/textures/or2grain.png");
-
-    GLuint or3 = 0;
-    loadTexture(or3, "assets/textures/or3grain.png");
-
-    GLuint ar1 = 0;
-    loadTexture(ar1, "assets/textures/ar1grain.png");
-
-    GLuint ar2 = 0;
-    loadTexture(ar2, "assets/textures/ar2grain.png");
-
-    GLuint ar3 = 0;
-    loadTexture(ar3, "assets/textures/ar3grain.png");
-
-    GLuint small = 0;
-    loadTexture(small, "assets/textures/smallgrain.png");
+    GLuint textureUnit = 0;
 
     shaderWater.use();
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(shaderWater.id(), "reflectionTexture"), 0);
-    glBindTexture(GL_TEXTURE_2D, waterfbos.getReflectionTexture());
-
-    glActiveTexture(GL_TEXTURE1);
-    glUniform1i(glGetUniformLocation(shaderWater.id(), "refractionTexture"), 1);
-    glBindTexture(GL_TEXTURE_2D, waterfbos.getRefractionTexture());
-
-    glActiveTexture(GL_TEXTURE2);
-    glUniform1i(glGetUniformLocation(shaderWater.id(), "dudvMap"), 2);
-    glBindTexture(GL_TEXTURE_2D, waterDudvTexture);
-
-    glActiveTexture(GL_TEXTURE3);
-    glUniform1i(glGetUniformLocation(shaderWater.id(), "normalMap"), 3);
-    glBindTexture(GL_TEXTURE_2D, waterNormalTexture);
+    bindTexture(shaderWater, waterfbos.getReflectionTexture(), "reflectionTexture", textureUnit);
+    bindTexture(shaderWater, waterfbos.getRefractionTexture(), "refractionTexture", textureUnit);
+    loadAndBindTexture(shaderWater, "assets/waterDUDV.png", "dudvMap", textureUnit);
+    loadAndBindTexture(shaderWater, "assets/waterNormalMap.png", "normalMap", textureUnit);
 
     shaderOr.use();
-    glActiveTexture(GL_TEXTURE4);
-    glUniform1i(glGetUniformLocation(shaderOr.id(), "or1"), 4);
-    glBindTexture(GL_TEXTURE_2D, or1);
-
-    glActiveTexture(GL_TEXTURE5);
-    glUniform1i(glGetUniformLocation(shaderOr.id(), "or2"), 5);
-    glBindTexture(GL_TEXTURE_2D, or2);
-
-    glActiveTexture(GL_TEXTURE6);
-    glUniform1i(glGetUniformLocation(shaderOr.id(), "or3"), 6);
-    glBindTexture(GL_TEXTURE_2D, or3);
+    loadAndBindTexture(shaderOr, "assets/textures/or1grain.png", "or1", textureUnit);
+    loadAndBindTexture(shaderOr, "assets/textures/or2grain.png", "or2", textureUnit);
+    loadAndBindTexture(shaderOr, "assets/textures/or3grain.png", "or3", textureUnit);
+    bindTexture(shaderOr, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
     shaderAr.use();
-    glActiveTexture(GL_TEXTURE7);
-    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar1"), 7);
-    glBindTexture(GL_TEXTURE_2D, ar1);
-
-    glActiveTexture(GL_TEXTURE8);
-    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar2"), 8);
-    glBindTexture(GL_TEXTURE_2D, ar2);
-
-    glActiveTexture(GL_TEXTURE9);
-    glUniform1i(glGetUniformLocation(shaderAr.id(), "ar3"), 9);
-    glBindTexture(GL_TEXTURE_2D, ar3);
+    loadAndBindTexture(shaderAr, "assets/textures/ar1grain.png", "ar1", textureUnit);
+    loadAndBindTexture(shaderAr, "assets/textures/ar2grain.png", "ar2", textureUnit);
+    loadAndBindTexture(shaderAr, "assets/textures/ar3grain.png", "ar3", textureUnit);
+    bindTexture(shaderAr, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
     shaderSmall.use();
-    glActiveTexture(GL_TEXTURE10);
-    glUniform1i(glGetUniformLocation(shaderSmall.id(), "small"), 10);
-    glBindTexture(GL_TEXTURE_2D, small);
-
-    shadowMapFBO.BindForReading(GL_TEXTURE11);
-    glUniform1i(glGetUniformLocation(shaderSmall.id(), "gShadowMap"), 11);
-
-    shaderAr.use();
-    shadowMapFBO.BindForReading(GL_TEXTURE12);
-    glUniform1i(glGetUniformLocation(shaderAr.id(), "gShadowMap"), 12);
-
-    shaderOr.use();
-    shadowMapFBO.BindForReading(GL_TEXTURE13);
-    glUniform1i(glGetUniformLocation(shaderOr.id(), "gShadowMap"), 13);
-
-    glActiveTexture(GL_TEXTURE14); // ?
+    loadAndBindTexture(shaderSmall, "assets/textures/smallgrain.png", "small", textureUnit);
+    bindTexture(shaderSmall, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
     glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
 
@@ -213,9 +148,8 @@ int main() {
         // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
 
         //GEN Shadow
-        shadowMapFBO.BindForWriting();
+        shadowMap.BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
-        // glCullFace(GL_BACK);
 
         shaderShadowGen.use();
 

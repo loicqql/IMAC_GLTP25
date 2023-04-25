@@ -19,21 +19,19 @@
 
 #include "p6/p6.h"
 
-class ShadowMapFBO {
+class ShadowFrameBuffers {
 public:
-    ShadowMapFBO();
+    ShadowFrameBuffers();
 
-    ~ShadowMapFBO();
+    ~ShadowFrameBuffers();
 
-    bool Init();
+    void BindForWriting() const;
 
-    void BindForWriting();
-
-    void BindForReading(GLenum TextureUnit);
+    GLuint getShadowTexture() const;
 
 private:
-    GLuint m_fbo;
-    GLuint m_shadowMap;
+    GLuint fbo;
+    GLuint shadowMap;
 
     int SHADOW_WIDTH = 4096;
     int SHADOW_HEIGHT = 4096;

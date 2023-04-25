@@ -37,7 +37,7 @@ void main()
 
     reflecTexCoords += totalDistortion;
     reflecTexCoords.x = clamp(reflecTexCoords.x, 0.001, 0.999);
-    reflecTexCoords.y = clamp(reflecTexCoords.y, -0.001, -0.999);
+    reflecTexCoords.y = clamp(reflecTexCoords.y, -0.999, -0.001);
 
     vec4 reflectColor = texture(reflectionTexture, reflecTexCoords);
     vec4 refractColor = texture(refractionTexture, refracTexCoords);
@@ -45,7 +45,7 @@ void main()
     //fresnelEffect
     vec3 viewVector = normalize(toCameraVector);
     float fresnelEffect = dot(viewVector, vec3(0.0, 1.0, 0.0));
-    // fresnelEffect = clamp(fresnelEffect, 0, 0.8);
+    fresnelEffect = clamp(fresnelEffect, 0.5, 1.0);
 
     //Normal map
     vec4 normalMapColor = texture(normalMap, distortedTexCoords);
