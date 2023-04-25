@@ -34,6 +34,8 @@ void Camera::update(p6::Context& ctx, Boat& boat) {
         rotationy_delta_user += (y_mouse - mouse.y) * 0.5f;
     }
 
+    /*
+
     if (!ctx.mouse_button_is_pressed(p6::Button::Left) && (ctx.key_is_pressed(GLFW_KEY_S) || ctx.key_is_pressed(GLFW_KEY_L))) {
         if (rotationx_delta_user != 0.f) {
             if (std::fabs(rotationx_delta_user) < force_reset_rotationx_delta_user) { // near 0
@@ -47,6 +49,8 @@ void Camera::update(p6::Context& ctx, Boat& boat) {
             }
         }
     }
+
+    */
 
     x_mouse = mouse.x;
     y_mouse = mouse.y;

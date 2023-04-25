@@ -60,9 +60,6 @@ int main() {
     glCullFace(GL_FRONT);
     glFrontFace(GL_CW);
 
-    glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
-
     const p6::Shader shaderOr = p6::load_shader(
         "shaders/terrain.vs.glsl",
         "shaders/terrainOr.fs.glsl");
@@ -93,9 +90,18 @@ int main() {
         shaderSmall.set(uniform_name, value);
         shaderCube.set(uniform_name, value);
         shaderWater.set(uniform_name, value);
+        shaderShadowGen.set(uniform_name, value);
     };
 
+    glm::mat4 projection = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+
+    projection = glm::perspective(glm::radians(45.0f), static_cast<float>(1280) / static_cast<float>(720), 0.001f, 100.0f);
+    model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
     setAllUniform("projection", projection);
+    setAllUniform("model", model);
 
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -142,11 +148,6 @@ int main() {
         camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
 
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        // view  = glm::translate(view, glm::vec3(0.0f, 0, -2.0f));
-
         //GEN Shadow
         shadowMap.BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -156,7 +157,6 @@ int main() {
         view = glm::lookAt(sunPosition, glm::vec3(0), { 0, 1, 0 });
 
         shaderShadowGen.set("projection", shadowProj);
-        shaderShadowGen.set("model", model);
         shaderShadowGen.set("view", view);
 
         terrain.drawMountainOr();
@@ -165,36 +165,23 @@ int main() {
 
         glm::mat4 DepthMVP = shadowProj * view * model;
 
-        shaderOr.set("DepthMVP", DepthMVP);
-        shaderAr.set("DepthMVP", DepthMVP);
-        shaderSmall.set("DepthMVP", DepthMVP);
+        setAllUniform("DepthMVP", DepthMVP);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 1280, 720);
 
         //reset view
-        view = glm::lookAt(posCam, boat.getPos(), { 0, 1, 0 });
-        glCullFace(GL_FRONT);
+        view = glm::lookAt(posCam, boat.getPos() + glm::vec3(0, 0.04, 0), { 0, 1, 0 });
 
         //invert pitch cam & render reflection texture
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::vec3 posCamReflection = posCam;
         float distance = 2 * (posCam.y - OCEAN_HEIGHT);
         posCamReflection.y -= distance;
-        shaderOr.set("model", model);
-        shaderOr.set("view", view);
-        shaderOr.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
-        shaderOr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
-        shaderAr.set("model", model);
-        shaderAr.set("view", view);
-        shaderAr.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
-        shaderAr.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
-        shaderSmall.set("model", model);
-        shaderSmall.set("view", view);
-        shaderSmall.set("view", glm::lookAt(posCamReflection, boat.getPos(), { 0, 1, 0 }));
-        shaderSmall.set("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
+        setAllUniform("view", glm::lookAt(posCamReflection, boat.getPos() - glm::vec3(0, 0.04, 0), { 0, 1, 0 }));
+        setAllUniform("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         waterfbos.bindReflectionFrameBuffer();
-        // glClearColor(0.2, 0.2, 0.8, 1.0);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderOr.use();
@@ -208,15 +195,10 @@ int main() {
 
         waterfbos.unbindCurrentFrameBuffer();
 
-        shaderOr.set("view", view); // reset cam pos
-        shaderAr.set("view", view);
-        shaderSmall.set("view", view);
+        setAllUniform("view", view); // reset cam pos
 
         //render refraction texture
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shaderOr.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
-        shaderAr.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
-        shaderSmall.set("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
+        setAllUniform("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
         waterfbos.bindRefractionFrameBuffer();
         // glClearColor(0.2, 0.2, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -231,25 +213,13 @@ int main() {
         terrain.drawMountainSmall();
 
         shaderCube.use();
-        shaderCube.set("model", model);
-        shaderCube.set("view", view);
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         waterfbos.unbindCurrentFrameBuffer();
 
         //render to screen
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shaderOr.set("model", model);
-        shaderOr.set("view", view);
-        shaderOr.set("plane", glm::vec4(0, -1, 0, 100));
-        shaderOr.set("projection", projection);
-        shaderAr.set("model", model);
-        shaderAr.set("view", view);
-        shaderAr.set("plane", glm::vec4(0, -1, 0, 100));
-        shaderAr.set("projection", projection);
-        shaderSmall.set("model", model);
-        shaderSmall.set("view", view);
-        shaderSmall.set("plane", glm::vec4(0, -1, 0, 100));
-        shaderSmall.set("projection", projection);
+
+        setAllUniform("plane", glm::vec4(0, -1, 0, 100));
 
         shaderOr.use();
         terrain.drawMountainOr();
@@ -266,13 +236,9 @@ int main() {
         shaderWater.set("lightColor", sunColor);
         shaderWater.set("moveWater", moveWater);
         shaderWater.set("cameraPosition", posCam);
-        shaderWater.set("model", model);
-        shaderWater.set("view", view);
         terrain.drawWater();
 
         shaderCube.use();
-        shaderCube.set("model", model);
-        shaderCube.set("view", view);
 
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         // for (uint i = 0; i < boids.size(); ++i) {

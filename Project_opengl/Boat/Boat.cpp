@@ -18,26 +18,25 @@ Boat::Boat() {
 void Boat::update(p6::Context& ctx) {
 
     float forceRot = 0.01;
-    // float limit = 0.0017;
-    float limit = 0.17; // dev
+    float limit = 0.0017;
 
     float coeffRot = 0.01;
 
-    bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_S) || ctx.key_is_pressed(GLFW_KEY_Q);
-    bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_L) || ctx.key_is_pressed(GLFW_KEY_L);
+    bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_S) || ctx.key_is_pressed(GLFW_KEY_A);
+    bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_L) || ctx.key_is_pressed(GLFW_KEY_D);
 
     if (leftIsPressed && rightIsPressed) {
-        speed += 0.00005;
+        speed += 0.003 * ctx.delta_time();
         rotRouge += coeffRot;
         rotBleu += coeffRot;
     } else if (leftIsPressed) {
         _rotation.y += forceRot;
         rotRouge += coeffRot;
-        speed -= 0.000001;
+        speed -= 0.0003 * ctx.delta_time();
     } else if (rightIsPressed) {
         _rotation.y -= forceRot;
         rotBleu += coeffRot;
-        speed -= 0.000001;
+        speed -= 0.0003 * ctx.delta_time();
     }
 
     if (speed > limit) {
@@ -50,7 +49,7 @@ void Boat::update(p6::Context& ctx) {
 
     if (!(leftIsPressed && rightIsPressed)) {
         if (speed > 0.0) {
-            speed -= 0.0001;
+            speed -= 0.0005 * ctx.delta_time();
             // speed -= 0.00001;
         }
     }
