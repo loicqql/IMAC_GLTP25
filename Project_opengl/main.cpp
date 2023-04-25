@@ -134,13 +134,14 @@ int main() {
     loadAndBindTexture(shaderSmall, "assets/textures/smallgrain.png", "small", textureUnit);
     bindTexture(shaderSmall, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
+    glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
+
     glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         const float OCEAN_HEIGHT = 0.f;
+        const glm::vec3 offsetCenterCamera = glm::vec3(0, 0.04, 0);
 
         moveWater += WAVE_SPEED * ctx.delta_time();
 
@@ -148,37 +149,38 @@ int main() {
         camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
 
-        //GEN Shadow
+        // ---------------------------------
+        // RENDER SHADOWS
+        // ---------------------------------
         shadowMap.BindForWriting();
         glClear(GL_DEPTH_BUFFER_BIT);
 
         shaderShadowGen.use();
 
-        view = glm::lookAt(sunPosition, glm::vec3(0), { 0, 1, 0 });
+        glm::mat4 shadowView = glm::lookAt(sunPosition, glm::vec3(0), { 0, 1, 0 });
 
         shaderShadowGen.set("projection", shadowProj);
-        shaderShadowGen.set("view", view);
+        shaderShadowGen.set("view", shadowView);
 
         terrain.drawMountainOr();
         terrain.drawMountainAr();
         terrain.drawMountainSmall();
 
-        glm::mat4 DepthMVP = shadowProj * view * model;
+        glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
         setAllUniform("DepthMVP", DepthMVP);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 1280, 720);
 
-        //reset view
-        view = glm::lookAt(posCam, boat.getPos() + glm::vec3(0, 0.04, 0), { 0, 1, 0 });
-
-        //invert pitch cam & render reflection texture
+        // ---------------------------------
+        // RENDER REFLECTION TEXTURE
+        // ---------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::vec3 posCamReflection = posCam;
         float distance = 2 * (posCam.y - OCEAN_HEIGHT);
         posCamReflection.y -= distance;
-        setAllUniform("view", glm::lookAt(posCamReflection, boat.getPos() - glm::vec3(0, 0.04, 0), { 0, 1, 0 }));
+        setAllUniform("view", glm::lookAt(posCamReflection, boat.getPos() - offsetCenterCamera, { 0, 1, 0 }));
         setAllUniform("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         waterfbos.bindReflectionFrameBuffer();
 
@@ -193,14 +195,21 @@ int main() {
         shaderSmall.use();
         terrain.drawMountainSmall();
 
+        /*
+        shaderCube.use();
+        boat.draw(glGetUniformLocation(shaderCube.id(), "model")); // test w/ final model
+        */
+
         waterfbos.unbindCurrentFrameBuffer();
 
-        setAllUniform("view", view); // reset cam pos
+        view = glm::lookAt(posCam, boat.getPos() + offsetCenterCamera, { 0, 1, 0 });
+        setAllUniform("view", view);
 
-        //render refraction texture
+        // ---------------------------------
+        // RENDER REFRACTION TEXTURE
+        // ---------------------------------
         setAllUniform("plane", glm::vec4(0, -1, 0, OCEAN_HEIGHT));
         waterfbos.bindRefractionFrameBuffer();
-        // glClearColor(0.2, 0.2, 0.8, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderOr.use();
@@ -216,9 +225,7 @@ int main() {
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         waterfbos.unbindCurrentFrameBuffer();
 
-        //render to screen
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        //RENDER TO SCREEN
         setAllUniform("plane", glm::vec4(0, -1, 0, 100));
 
         shaderOr.use();
@@ -239,7 +246,6 @@ int main() {
         terrain.drawWater();
 
         shaderCube.use();
-
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         // for (uint i = 0; i < boids.size(); ++i) {
         //     boids[i].update(ctx, boids);
