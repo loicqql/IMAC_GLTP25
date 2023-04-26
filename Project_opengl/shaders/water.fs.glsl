@@ -59,5 +59,5 @@ void main()
 	vec3 specularHighlights = lightColor * specular * reflectivity;
 
     fFragColor = mix(reflectColor, refractColor, fresnelEffect) + vec4(specularHighlights, 0.0);
-    // fFragColor = mix(fFragColor, vec4(0.0, 0.3, 0.5, 1.0), 0.1); // add a blue color
+    fFragColor = mix(fFragColor, vec4(0.0, 0.3, 0.5, 1.0), 0.15); // add a blue color
 }

@@ -4,6 +4,8 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 
+#include "./OpenGlWrapper.h"
+#include "./skybox.h"
 #include "./utils.h"
 
 #include <cmath>
@@ -46,6 +48,9 @@ int main() {
     WaterFrameBuffers waterfbos;
     ShadowFrameBuffers shadowMap;
 
+    OpenGlWrapper skybox;
+    initSkybox(skybox);
+
     // ShadersManager shadersManager;
 
     const float WAVE_SPEED = 0.05f;
@@ -84,6 +89,10 @@ int main() {
         "shaders/shadow_gen.vs.glsl",
         "shaders/shadow_gen.fs.glsl");
 
+    const p6::Shader shaderSkybox = p6::load_shader(
+        "shaders/skybox.vs.glsl",
+        "shaders/skybox.fs.glsl");
+
     auto setAllUniform = [&](auto uniform_name, auto value) {
         shaderOr.set(uniform_name, value);
         shaderAr.set(uniform_name, value);
@@ -91,6 +100,7 @@ int main() {
         shaderCube.set(uniform_name, value);
         shaderWater.set(uniform_name, value);
         shaderShadowGen.set(uniform_name, value);
+        shaderSkybox.set(uniform_name, value);
     };
 
     glm::mat4 projection = glm::mat4(1.0f);
@@ -134,6 +144,16 @@ int main() {
     loadAndBindTexture(shaderSmall, "assets/textures/smallgrain.png", "small", textureUnit);
     bindTexture(shaderSmall, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
+    shaderSkybox.use();
+    std::vector<std::filesystem::path> faces = { "assets/cubemap/right.png",
+                                                 "assets/cubemap/left.png",
+                                                 "assets/cubemap/top.png",
+                                                 "assets/cubemap/bottom.png",
+                                                 "assets/cubemap/back.png",
+                                                 "assets/cubemap/front.png" };
+
+    loadAndBindCubemap(shaderSkybox, faces, "skybox", textureUnit);
+
     glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
 
     glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
@@ -162,9 +182,7 @@ int main() {
         shaderShadowGen.set("projection", shadowProj);
         shaderShadowGen.set("view", shadowView);
 
-        terrain.drawMountainOr();
-        terrain.drawMountainAr();
-        terrain.drawMountainSmall();
+        terrain.drawTerrain();
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
@@ -195,6 +213,9 @@ int main() {
         shaderSmall.use();
         terrain.drawMountainSmall();
 
+        shaderSkybox.use();
+        skybox.draw();
+
         /*
         shaderCube.use();
         boat.draw(glGetUniformLocation(shaderCube.id(), "model")); // test w/ final model
@@ -221,11 +242,16 @@ int main() {
         shaderSmall.use();
         terrain.drawMountainSmall();
 
+        shaderSkybox.use();
+        skybox.draw();
+
         shaderCube.use();
         boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
         waterfbos.unbindCurrentFrameBuffer();
 
-        //RENDER TO SCREEN
+        // ---------------------------------
+        // RENDER TO SCREEN
+        // ---------------------------------
         setAllUniform("plane", glm::vec4(0, -1, 0, 100));
 
         shaderOr.use();
@@ -237,8 +263,10 @@ int main() {
         shaderSmall.use();
         terrain.drawMountainSmall();
 
-        shaderWater.use();
+        shaderSkybox.use();
+        skybox.draw();
 
+        shaderWater.use();
         shaderWater.set("lightPosition", sunPosition);
         shaderWater.set("lightColor", sunColor);
         shaderWater.set("moveWater", moveWater);

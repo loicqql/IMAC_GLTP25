@@ -28,6 +28,12 @@ private:
 public:
     Terrain();
 
+    inline void drawTerrain() const {
+        drawMountainOr();
+        drawMountainAr();
+        drawMountainSmall();
+    }
+
     inline void drawMountainOr() const {
         _openGlWrapperTerrainOr.draw();
     }

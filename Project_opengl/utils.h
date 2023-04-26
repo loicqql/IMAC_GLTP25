@@ -70,3 +70,29 @@ void bindTexture(const p6::Shader& shader, GLuint texture_id, auto uniform_name,
     glUniform1i(glGetUniformLocation(shader.id(), uniform_name), texture_unit);
     glBindTexture(GL_TEXTURE_2D, texture_id);
 }
+
+void loadAndBindCubemap(const p6::Shader& shader, const std::vector<std::filesystem::path>& faces, auto uniform_name, GLuint& texture_unit) {
+    GLuint texture_id = 0;
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+
+    uint i = 0;
+    for (const std::filesystem::path& texture_path : faces) {
+        const img::Image image = p6::load_image_buffer(texture_path);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+        ++i;
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+    texture_unit++;
+    glActiveTexture(GL_TEXTURE0 + texture_unit);
+    glUniform1i(glGetUniformLocation(shader.id(), uniform_name), texture_unit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+}
