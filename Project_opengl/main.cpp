@@ -10,6 +10,7 @@
 
 #include <cmath>
 
+#include "glm/gtx/transform.hpp"
 #include "p6/p6.h"
 
 #include "glimac/default_shader.hpp"
@@ -22,6 +23,9 @@
 
 #include "Shadow/ShadowFrameBuffers.h"
 #include "Water/WaterFrameBuffers.h"
+
+// #include "./loaders/gltf/loaderGLTF.h"
+#include "./loaderGLTF/Model.h"
 
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
@@ -93,6 +97,14 @@ int main() {
         "shaders/skybox.vs.glsl",
         "shaders/skybox.fs.glsl");
 
+    const p6::Shader shaderSimple = p6::load_shader(
+        "shaders/simple.vs.glsl",
+        "shaders/simple.fs.glsl");
+
+    const p6::Shader shaderGLTF = p6::load_shader(
+        "shaders/gltf.vs.glsl",
+        "shaders/gltf.fs.glsl");
+
     auto setAllUniform = [&](auto uniform_name, auto value) {
         shaderOr.set(uniform_name, value);
         shaderAr.set(uniform_name, value);
@@ -101,6 +113,8 @@ int main() {
         shaderWater.set(uniform_name, value);
         shaderShadowGen.set(uniform_name, value);
         shaderSkybox.set(uniform_name, value);
+        shaderSimple.set(uniform_name, value);
+        shaderGLTF.set(uniform_name, value);
     };
 
     glm::mat4 projection = glm::mat4(1.0f);
@@ -144,6 +158,9 @@ int main() {
     loadAndBindTexture(shaderSmall, "assets/textures/smallgrain.png", "small", textureUnit);
     bindTexture(shaderSmall, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
+    shaderGLTF.use();
+    bindTexture(shaderGLTF, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
+
     shaderSkybox.use();
     std::vector<std::filesystem::path> faces = { "assets/cubemap/right.png",
                                                  "assets/cubemap/left.png",
@@ -154,9 +171,17 @@ int main() {
 
     loadAndBindCubemap(shaderSkybox, faces, "skybox", textureUnit);
 
+    glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
+
+    loaderGLTF castle;
+    shaderCube.use();
+    castle.load("./assets/models/castle/untitled.gltf", shaderCube.id(), textureUnit);
+
     glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
 
-    glm::mat4 shadowProj = glm::ortho<float>(-2.5, 2.5, -2.5, 2.5, -2.5, 2.5);
+    shaderGLTF.use();
+    Model centre("./assets/models/castle/centre/centre.gltf");
+    shaderGLTF.set("projection", projection);
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
@@ -168,6 +193,13 @@ int main() {
         boat.update(ctx);
         camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
+
+        //ENV
+        glm::mat4 modelC = glm::mat4(1.0);
+        modelC = glm::translate(modelC, glm::vec3(-0.5, -0.01, 0.85));
+        modelC = glm::rotate(modelC, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
+        modelC = glm::rotate(modelC, -p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
+        modelC = glm::scale(modelC, glm::vec3(0.012));
 
         // ---------------------------------
         // RENDER SHADOWS
@@ -183,6 +215,10 @@ int main() {
         shaderShadowGen.set("view", shadowView);
 
         terrain.drawTerrain();
+
+        shaderGLTF.use();
+        shaderGLTF.set("model", modelC);
+        centre.Draw(shaderGLTF.id());
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
@@ -218,8 +254,12 @@ int main() {
 
         /*
         shaderCube.use();
-        boat.draw(glGetUniformLocation(shaderCube.id(), "model")); // test w/ final model
+        boat.draw(shaderCube); // test w/ final model
         */
+
+        shaderGLTF.use();
+        shaderGLTF.set("model", modelC);
+        centre.Draw(shaderGLTF.id());
 
         waterfbos.unbindCurrentFrameBuffer();
 
@@ -246,8 +286,12 @@ int main() {
         skybox.draw();
 
         shaderCube.use();
-        boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
+        boat.draw(shaderCube);
         waterfbos.unbindCurrentFrameBuffer();
+
+        shaderGLTF.use();
+        shaderGLTF.set("model", modelC);
+        centre.Draw(shaderGLTF.id());
 
         // ---------------------------------
         // RENDER TO SCREEN
@@ -273,8 +317,20 @@ int main() {
         shaderWater.set("cameraPosition", posCam);
         terrain.drawWater();
 
-        shaderCube.use();
-        boat.draw(glGetUniformLocation(shaderCube.id(), "model"));
+        // shaderCube.use();
+        // boat.draw(shaderCube);
+
+        // shaderCube.use();
+        // glm::mat4 castleModel = glm::mat4(1.0);
+        // castleModel = glm::translate(castleModel, glm::vec3(0.0, 0.5, 0.0));
+        // castleModel = glm::scale(castleModel, glm::vec3(0.2));
+        // shaderCube.set("model", castleModel);
+        // castle.draw();
+
+        shaderGLTF.use();
+        shaderGLTF.set("model", modelC);
+        centre.Draw(shaderGLTF.id());
+
         // for (uint i = 0; i < boids.size(); ++i) {
         //     boids[i].update(ctx, boids);
         //     boids[i].draw(glGetUniformLocation(shaderCube.id(), "model"));

@@ -12,11 +12,11 @@
 
 // using namespace tinygltf;
 
-void loaderGLTF::load(const char* filename) {
+void loaderGLTF::load(const char* filename, GLuint shaderId, GLuint& texture_unit) {
     if (!loadModel(model, filename)) {
         std::cout << "Non" << std::endl;
     }
-    vaoAndEbos = bindModel(model);
+    vaoAndEbos = bindModel(model, shaderId, texture_unit);
 }
 
 void loaderGLTF::draw() {
@@ -54,7 +54,7 @@ bool loaderGLTF::loadModel(tinygltf::Model& model, const char* filename) {
     return res;
 }
 
-void loaderGLTF::bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Mesh& mesh) {
+void loaderGLTF::bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Mesh& mesh, GLuint shaderId, GLuint& texture_unit) {
     for (size_t i = 0; i < model.bufferViews.size(); ++i) {
         const tinygltf::BufferView& bufferView = model.bufferViews[i];
         if (bufferView.target == 0) { // TODO impl drawarrays
@@ -105,11 +105,14 @@ void loaderGLTF::bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, t
             if (attrib.first.compare("POSITION") == 0)
                 vaa = 0;
             if (attrib.first.compare("NORMAL") == 0)
-                vaa = 1;
+                vaa = 3;
             if (attrib.first.compare("TEXCOORD_0") == 0)
                 vaa = 2;
+            // if (attrib.first.compare("COLOR_0") == 0)
+            //     vaa = 1;
             if (vaa > -1) {
                 glEnableVertexAttribArray(vaa);
+                std::cout << vaa << ", " << size << std::endl;
                 glVertexAttribPointer(vaa, size, accessor.componentType, accessor.normalized ? GL_TRUE : GL_FALSE, byteStride, BUFFER_OFFSET(accessor.byteOffset));
             } else
                 std::cout << "vaa missing: " << attrib.first << std::endl;
@@ -155,24 +158,33 @@ void loaderGLTF::bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, t
                 }
 
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, format, type, &image.image.at(0));
+
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                texture_unit++;
+
+                std::cout << texture_unit << std::endl;
+                glActiveTexture(GL_TEXTURE0 + texture_unit);
+                glUniform1i(glGetUniformLocation(shaderId, "tex"), texture_unit);
+                glBindTexture(GL_TEXTURE_2D, texid);
             }
         }
     }
 }
 
 // bind models
-void loaderGLTF::bindModelNodes(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Node& node) {
+void loaderGLTF::bindModelNodes(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Node& node, GLuint shaderId, GLuint& texture_unit) {
     if ((node.mesh >= 0) && (node.mesh < model.meshes.size())) {
-        bindMesh(vbos, model, model.meshes[node.mesh]);
+        bindMesh(vbos, model, model.meshes[node.mesh], shaderId, texture_unit);
     }
 
     for (size_t i = 0; i < node.children.size(); i++) {
         assert((node.children[i] >= 0) && (node.children[i] < model.nodes.size()));
-        bindModelNodes(vbos, model, model.nodes[node.children[i]]);
+        bindModelNodes(vbos, model, model.nodes[node.children[i]], shaderId, texture_unit);
     }
 }
 
-std::pair<GLuint, std::map<int, GLuint>> loaderGLTF::bindModel(tinygltf::Model& model) {
+std::pair<GLuint, std::map<int, GLuint>> loaderGLTF::bindModel(tinygltf::Model& model, GLuint shaderId, GLuint& texture_unit) {
     std::map<int, GLuint> vbos;
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -181,7 +193,7 @@ std::pair<GLuint, std::map<int, GLuint>> loaderGLTF::bindModel(tinygltf::Model& 
     const tinygltf::Scene& scene = model.scenes[model.defaultScene];
     for (size_t i = 0; i < scene.nodes.size(); ++i) {
         assert((scene.nodes[i] >= 0) && (scene.nodes[i] < model.nodes.size()));
-        bindModelNodes(vbos, model, model.nodes[scene.nodes[i]]);
+        bindModelNodes(vbos, model, model.nodes[scene.nodes[i]], shaderId, texture_unit);
     }
 
     glBindVertexArray(0);

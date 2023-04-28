@@ -6,13 +6,13 @@
 
 Boat::Boat() {
 
-    _position = { 0.5, 0, 0.1 };
+    _position = { -0.5, 0, 0.4 };
     // _position = {-1, 0, -1};
     _rotation = { 0, 0, 0 };
 
-    main.load("./assets/models/boat/boat.gltf");
-    rouge.load("./assets/models/boat/rouge.gltf");
-    bleu.load("./assets/models/boat/bleu.gltf");
+    // main.load("./assets/models/boat/boat.gltf");
+    // rouge.load("./assets/models/boat/rouge.gltf");
+    // bleu.load("./assets/models/boat/bleu.gltf");
 }
 
 void Boat::update(p6::Context& ctx) {
@@ -57,7 +57,7 @@ void Boat::update(p6::Context& ctx) {
     this->_position = { glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z };
 }
 
-void Boat::draw(unsigned int modelLoc) {
+void Boat::draw(const p6::Shader& shader) {
 
     glm::mat4 base = glm::mat4(1.0);
 
@@ -67,12 +67,12 @@ void Boat::draw(unsigned int modelLoc) {
     base = glm::scale(base, glm::vec3(0.03)); // final scale
     // base = glm::translate(base, glm::vec3(0.0, 1.0, 0.0)); // fix final z
 
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(base));
-    main.draw();
+    // shader.set("model", base);
+    // main.draw();
 
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::rotate(base, -rotBleu, glm::vec3(1.0f, 0.0f, 0.0f))));
-    rouge.draw();
+    // shader.set("model", base);
+    // rouge.draw();
 
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::rotate(base, -rotRouge, glm::vec3(1.0f, 0.0f, 0.0f))));
-    bleu.draw();
+    // shader.set("model", base);
+    // bleu.draw();
 }

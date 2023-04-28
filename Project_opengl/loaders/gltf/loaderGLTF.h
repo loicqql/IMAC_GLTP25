@@ -17,7 +17,7 @@ private:
     std::pair<GLuint, std::map<int, GLuint>> vaoAndEbos;
 
 public:
-    void load(const char* filename);
+    void load(const char* filename, GLuint shaderId, GLuint& texture_unit);
 
     void draw();
 
@@ -26,12 +26,12 @@ public:
 private:
     bool loadModel(tinygltf::Model& model, const char* filename);
 
-    void bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Mesh& mesh);
+    void bindMesh(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Mesh& mesh, GLuint shaderId, GLuint& texture_unit);
 
     // bind models
-    void bindModelNodes(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Node& node);
+    void bindModelNodes(std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Node& node, GLuint shaderId, GLuint& texture_unit);
 
-    std::pair<GLuint, std::map<int, GLuint>> bindModel(tinygltf::Model& model);
+    std::pair<GLuint, std::map<int, GLuint>> bindModel(tinygltf::Model& model, GLuint shaderId, GLuint& texture_unit);
 
     void drawMesh(const std::map<int, GLuint>& vbos, tinygltf::Model& model, tinygltf::Mesh& mesh);
 

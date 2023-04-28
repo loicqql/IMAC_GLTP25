@@ -27,7 +27,7 @@ Boid::Boid(glm::vec3 position, glm::vec3 velocity) {
 void Boid::init() {
     // float width = 0.2;
 
-    main.load("./assets/models/boat/boat.gltf");
+    // main.load("./assets/models/boat/boat.gltf");
 }
 
 //update && draw

@@ -23,7 +23,7 @@ public:
 
     void update(p6::Context& ctx);
 
-    void draw(unsigned int modelLoc);
+    void draw(const p6::Shader& shader);
 
     inline glm::vec3 getPos() {
         return _position;
