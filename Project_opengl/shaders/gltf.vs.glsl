@@ -41,6 +41,7 @@ void main()
 
 	// calculates current position
 	crntPos = vec3(vmodel * translation * -rotation * scale * vec4(aPos, 1.0f));
+
 	// Assigns the normal from the Vertex Data to "Normal"
 	Normal = aNormal;
 	// Assigns the colors from the Vertex Data to "color"
@@ -51,8 +52,9 @@ void main()
 	vec4 position = model * vec4(crntPos, 1.0);
 	gl_ClipDistance[0] = dot(position, plane);
 
-	LightSpacePos = DepthMVP * vec4(aPos,1);
-	
-	// Outputs the positions/coordinates of all vertices
+	LightSpacePos = DepthMVP * vec4(crntPos,1);
+
 	gl_Position = projection * view * model * vec4(crntPos, 1.0);
+	crntPos = gl_Position.xyz;
+	
 }

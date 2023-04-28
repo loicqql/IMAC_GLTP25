@@ -31,7 +31,7 @@ void main() {
     float Depth = texture(gShadowMap, UVCoords).x;
     
     float bias = 0.0003;
-    float visibility = 0.0;
+    float inshadow = 0.0;
     vec2 poissonDisk[4] = vec2[](
         vec2( -0.09420163, -0.03990622 ),
         vec2( 0.094558609, -0.07689073 ),
@@ -41,10 +41,10 @@ void main() {
 
     for (int i=0;i<2;i++){
         if (texture(gShadowMap, UVCoords + poissonDisk[i]/700.0 ).x  + bias < z) {
-            visibility += 0.05;
+            inshadow += 0.05;
         }
     }
-    fFragColor = fFragColor - vec4(1) * visibility;
+    fFragColor = fFragColor - vec4(1) * inshadow;
 
     // if(vTexId == 1) {
     //     fFragColor = texture(or1, vTexCoord);

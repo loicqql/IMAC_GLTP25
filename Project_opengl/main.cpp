@@ -90,16 +90,12 @@ int main() {
         "shaders/water.fs.glsl");
 
     const p6::Shader shaderShadowGen = p6::load_shader(
-        "shaders/shadow_gen.vs.glsl",
-        "shaders/shadow_gen.fs.glsl");
+        "shaders/shadowGen.vs.glsl",
+        "shaders/shadowGen.fs.glsl");
 
     const p6::Shader shaderSkybox = p6::load_shader(
         "shaders/skybox.vs.glsl",
         "shaders/skybox.fs.glsl");
-
-    const p6::Shader shaderSimple = p6::load_shader(
-        "shaders/simple.vs.glsl",
-        "shaders/simple.fs.glsl");
 
     const p6::Shader shaderGLTF = p6::load_shader(
         "shaders/gltf.vs.glsl",
@@ -113,7 +109,6 @@ int main() {
         shaderWater.set(uniform_name, value);
         shaderShadowGen.set(uniform_name, value);
         shaderSkybox.set(uniform_name, value);
-        shaderSimple.set(uniform_name, value);
         shaderGLTF.set(uniform_name, value);
     };
 
@@ -133,6 +128,9 @@ int main() {
 
     glm::vec3 sunColor = { 1.0, 1.0, 1.0 };
     glm::vec3 sunPosition = { -0.5, 0.5, -0.5 };
+
+    setAllUniform("lightPosition", sunPosition);
+    setAllUniform("lightColor", sunColor);
 
     GLuint textureUnit = 0;
 
@@ -179,8 +177,8 @@ int main() {
 
     glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
 
-    shaderGLTF.use();
     Model centre("./assets/models/castle/centre/centre.gltf");
+    shaderGLTF.use();
     shaderGLTF.set("projection", projection);
 
     // Declare your infinite update loop.
@@ -200,6 +198,8 @@ int main() {
         modelC = glm::rotate(modelC, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
         modelC = glm::rotate(modelC, -p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
         modelC = glm::scale(modelC, glm::vec3(0.012));
+        shaderGLTF.use();
+        shaderGLTF.set("model", modelC);
 
         // ---------------------------------
         // RENDER SHADOWS
@@ -217,12 +217,15 @@ int main() {
         terrain.drawTerrain();
 
         shaderGLTF.use();
-        shaderGLTF.set("model", modelC);
+        shaderGLTF.set("projection", shadowProj);
+        shaderGLTF.set("view", shadowView);
         centre.Draw(shaderGLTF.id());
+        shaderGLTF.set("projection", projection);
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
         setAllUniform("DepthMVP", DepthMVP);
+        shaderGLTF.set("DepthMVP", shadowProj * shadowView * modelC);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 1280, 720);
@@ -258,7 +261,6 @@ int main() {
         */
 
         shaderGLTF.use();
-        shaderGLTF.set("model", modelC);
         centre.Draw(shaderGLTF.id());
 
         waterfbos.unbindCurrentFrameBuffer();
@@ -290,7 +292,6 @@ int main() {
         waterfbos.unbindCurrentFrameBuffer();
 
         shaderGLTF.use();
-        shaderGLTF.set("model", modelC);
         centre.Draw(shaderGLTF.id());
 
         // ---------------------------------
@@ -311,8 +312,6 @@ int main() {
         skybox.draw();
 
         shaderWater.use();
-        shaderWater.set("lightPosition", sunPosition);
-        shaderWater.set("lightColor", sunColor);
         shaderWater.set("moveWater", moveWater);
         shaderWater.set("cameraPosition", posCam);
         terrain.drawWater();
@@ -328,7 +327,7 @@ int main() {
         // castle.draw();
 
         shaderGLTF.use();
-        shaderGLTF.set("model", modelC);
+        shaderGLTF.set("camPos", posCam);
         centre.Draw(shaderGLTF.id());
 
         // for (uint i = 0; i < boids.size(); ++i) {
