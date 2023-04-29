@@ -43,6 +43,7 @@ void main()
 	crntPos = vec3(vmodel * translation * -rotation * scale * vec4(aPos, 1.0f));
 
 	// Assigns the normal from the Vertex Data to "Normal"
+	//Normal = mat3(transpose(inverse(model))) * aNormal; // hum
 	Normal = aNormal;
 	// Assigns the colors from the Vertex Data to "color"
 	color = aColor;

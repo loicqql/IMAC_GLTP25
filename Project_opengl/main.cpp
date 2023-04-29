@@ -173,11 +173,12 @@ int main() {
 
     loaderGLTF castle;
     shaderCube.use();
-    castle.load("./assets/models/castle/untitled.gltf", shaderCube.id(), textureUnit);
+    // castle.load("./assets/models/castle/untitled.gltf", shaderCube.id(), textureUnit);
 
     glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
 
-    Model centre("./assets/models/castle/centre/centre.gltf");
+    // Model centre("./assets/models/castle/centre/centre.gltf");
+    Model centre("./assets/test/droneGLTF.gltf");
     shaderGLTF.use();
     shaderGLTF.set("projection", projection);
 
@@ -194,10 +195,12 @@ int main() {
 
         //ENV
         glm::mat4 modelC = glm::mat4(1.0);
-        modelC = glm::translate(modelC, glm::vec3(-0.5, -0.01, 0.85));
+        // modelC = glm::translate(modelC, glm::vec3(-0.5, -0.01, 0.85));
+        modelC = glm::translate(modelC, glm::vec3(-0.2, 0.2, 0.6));
         modelC = glm::rotate(modelC, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
         modelC = glm::rotate(modelC, -p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
-        modelC = glm::scale(modelC, glm::vec3(0.012));
+        // modelC = glm::scale(modelC, glm::vec3(0.012));
+        modelC = glm::scale(modelC, glm::vec3(0.03));
         shaderGLTF.use();
         shaderGLTF.set("model", modelC);
 
