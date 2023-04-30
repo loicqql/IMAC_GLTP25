@@ -21,10 +21,10 @@ out vec2 texCoord;
 
 out vec4 LightSpacePos;
 
-// uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
+uniform mat3 normalMatrix;
 
 // Imports the transformation matrices
 uniform mat4 vmodel;
@@ -43,8 +43,7 @@ void main()
 	crntPos = vec3(vmodel * translation * -rotation * scale * vec4(aPos, 1.0f));
 
 	// Assigns the normal from the Vertex Data to "Normal"
-	//Normal = mat3(transpose(inverse(model))) * aNormal; // hum
-	Normal = aNormal;
+	Normal = normalMatrix * aNormal;
 	// Assigns the colors from the Vertex Data to "color"
 	color = aColor;
 	// Assigns the texture coordinates from the Vertex Data to "texCoord"

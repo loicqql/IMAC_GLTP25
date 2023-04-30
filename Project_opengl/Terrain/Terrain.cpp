@@ -1,5 +1,6 @@
 #include "Terrain.h"
 #include "../utils.h"
+#include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
 #include <cmath>
 
@@ -69,12 +70,15 @@ void Terrain::initTerrain() {
 
     _openGlWrapperTerrainOr.updateVertices();
     _openGlWrapperTerrainOr.updateTextures();
+    _openGlWrapperTerrainOr.updateNormals();
 
     _openGlWrapperTerrainAr.updateVertices();
     _openGlWrapperTerrainAr.updateTextures();
+    _openGlWrapperTerrainAr.updateNormals();
 
     _openGlWrapperTerrainSmall.updateVertices();
     _openGlWrapperTerrainSmall.updateTextures();
+    _openGlWrapperTerrainSmall.updateNormals();
 }
 
 void Terrain::initOcean() {
@@ -111,53 +115,65 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._vertices.push_back(Vertex3D { { x + dx, y + dy, z - height / 2.0 }, colorBottom });
     wrapper._vertices.push_back(Vertex3D { { x, y + dy, z - height / 2.0 }, colorBottom });
 
-    //top
     wrapper._indices.push_back(indice);
     wrapper._indices.push_back(indice + 4);
     wrapper._indices.push_back(indice + 5);
     wrapper._indices.push_back(indice + 5);
     wrapper._indices.push_back(indice + 1);
     wrapper._indices.push_back(indice + 0);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+    });
 
-    //Bottom
     wrapper._indices.push_back(indice + 3);
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 7);
     wrapper._indices.push_back(indice + 3);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+    });
 
-    //front
     wrapper._indices.push_back(indice);
     wrapper._indices.push_back(indice + 1);
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 3);
     wrapper._indices.push_back(indice);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    });
 
-    //back
     wrapper._indices.push_back(indice + 4);
     wrapper._indices.push_back(indice + 7);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 5);
     wrapper._indices.push_back(indice + 4);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+    });
 
-    //right
     wrapper._indices.push_back(indice + 1);
     wrapper._indices.push_back(indice + 5);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 6);
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 1);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+    });
 
-    //left
     wrapper._indices.push_back(indice + 4);
     wrapper._indices.push_back(indice);
     wrapper._indices.push_back(indice + 3);
     wrapper._indices.push_back(indice + 3);
     wrapper._indices.push_back(indice + 7);
     wrapper._indices.push_back(indice + 4);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+    });
 
     std::random_device rd;
     std::mt19937 mt(rd());

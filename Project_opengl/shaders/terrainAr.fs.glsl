@@ -5,6 +5,10 @@ in vec3 vColor;
 in vec2 vTexCoord;
 flat in vec2 vTexId;
 
+in vec3 Normal;
+
+in vec3 crntPos;
+
 in vec4 LightSpacePos;
 
 out vec4 fFragColor;
@@ -13,6 +17,33 @@ uniform sampler2D ar1;
 uniform sampler2D ar2;
 uniform sampler2D ar3;
 uniform sampler2D gShadowMap;
+
+uniform vec3 lightColor;
+uniform vec3 lightPosition;
+uniform vec3 camPos;
+
+vec4 direcLight(vec4 textureColor) {
+
+	vec3 lightVec = lightPosition - vec3(0); // lightDirection sun
+
+	// ambient lighting
+	float ambient = 0.45f;
+
+	// diffuse lighting
+	vec3 normal = normalize(Normal);
+	vec3 lightDirection = normalize(lightVec);
+	float diffuse = max(dot(normal, lightDirection), 0.0f);
+
+	// specular lighting
+	float specularLight = 0.50f;
+	vec3 viewDirection = normalize(camPos - crntPos);
+	vec3 reflectionDirection = reflect(-lightDirection, normal);
+	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 16);
+	float specular = specAmount * specularLight;
+
+
+	return (textureColor * (diffuse + ambient) + 0.5 * specular) * vec4(lightColor,1.0);
+}
 
 void main() {
     
@@ -42,5 +73,7 @@ void main() {
             visibility += 0.05;
         }
     }
+
+    fFragColor = direcLight(fFragColor);
     fFragColor = fFragColor - vec4(1) * visibility;
 }

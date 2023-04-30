@@ -1,7 +1,17 @@
 #pragma once
+#include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+#include "glm/matrix.hpp"
 #include "p6/p6.h"
 #include <glm/glm.hpp>
+#include <utility>
+
+template <typename F>
+inline constexpr void repeat(std::size_t const n, F const& f) {
+    for (std::size_t i = 0; i < n; ++i) {
+        f();
+    }
+}
 
 inline void vec3_limit(glm::vec3& vec, glm::vec3 limit) {
     vec.x = vec.x > limit.x ? limit.x : vec.x;
@@ -37,8 +47,8 @@ inline glm::vec3 color_map(float x, float x_min, float x_max, glm::vec3 color_mi
     return glm::vec3(float_map(_x, color_max.x, color_min.x), float_map(_x, color_max.y, color_min.y), float_map(_x, color_max.z, color_min.z));
 }
 
-GLuint loadTexture(auto texture_path) {
-    const img::Image image = p6::load_image_buffer(texture_path);
+inline GLuint loadTexture(std::filesystem::path texture_path) {
+    const img::Image image = p6::load_image_buffer(std::move(texture_path));
 
     GLuint texture_id = 0;
 
@@ -95,4 +105,8 @@ void loadAndBindCubemap(const p6::Shader& shader, const std::vector<std::filesys
     glActiveTexture(GL_TEXTURE0 + texture_unit);
     glUniform1i(glGetUniformLocation(shader.id(), uniform_name), texture_unit);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
+}
+
+inline glm::mat3 normalMatrix(const glm::mat4& model) {
+    return glm::mat3(glm::transpose(glm::inverse(model)));
 }

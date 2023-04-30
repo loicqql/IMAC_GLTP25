@@ -121,6 +121,7 @@ int main() {
 
     setAllUniform("projection", projection);
     setAllUniform("model", model);
+    setAllUniform("normalMatrix", normalMatrix(model));
 
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -182,6 +183,18 @@ int main() {
     shaderGLTF.use();
     shaderGLTF.set("projection", projection);
 
+    //ENV
+    glm::mat4 modelC = glm::mat4(1.0);
+    // modelC = glm::translate(modelC, glm::vec3(-0.5, -0.01, 0.85));
+    modelC = glm::translate(modelC, glm::vec3(-0.2, 0.2, 0.6));
+    modelC = glm::rotate(modelC, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
+    modelC = glm::rotate(modelC, -p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
+    // modelC = glm::scale(modelC, glm::vec3(0.012));
+    modelC = glm::scale(modelC, glm::vec3(0.03));
+    shaderGLTF.use();
+    shaderGLTF.set("model", modelC);
+    shaderGLTF.set("normalMatrix", normalMatrix(modelC));
+
     // Declare your infinite update loop.
     ctx.update = [&]() {
         const float OCEAN_HEIGHT = 0.f;
@@ -192,17 +205,7 @@ int main() {
         boat.update(ctx);
         camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
-
-        //ENV
-        glm::mat4 modelC = glm::mat4(1.0);
-        // modelC = glm::translate(modelC, glm::vec3(-0.5, -0.01, 0.85));
-        modelC = glm::translate(modelC, glm::vec3(-0.2, 0.2, 0.6));
-        modelC = glm::rotate(modelC, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
-        modelC = glm::rotate(modelC, -p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
-        // modelC = glm::scale(modelC, glm::vec3(0.012));
-        modelC = glm::scale(modelC, glm::vec3(0.03));
-        shaderGLTF.use();
-        shaderGLTF.set("model", modelC);
+        setAllUniform("camPos", posCam);
 
         // ---------------------------------
         // RENDER SHADOWS
@@ -316,7 +319,6 @@ int main() {
 
         shaderWater.use();
         shaderWater.set("moveWater", moveWater);
-        shaderWater.set("cameraPosition", posCam);
         terrain.drawWater();
 
         // shaderCube.use();
@@ -330,7 +332,6 @@ int main() {
         // castle.draw();
 
         shaderGLTF.use();
-        shaderGLTF.set("camPos", posCam);
         centre.Draw(shaderGLTF.id());
 
         // for (uint i = 0; i < boids.size(); ++i) {
@@ -341,7 +342,4 @@ int main() {
 
     // Should be done last. It starts the infinite loop.
     ctx.start();
-
-    // glDeleteBuffers(1, &vbo);
-    // glDeleteVertexArrays(1, &vao);
 }

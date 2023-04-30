@@ -18,10 +18,12 @@ struct OpenGlWrapper {
     GLuint _vbo {};
     GLuint _vao {};
     GLuint _tex {};
+    GLuint _nor {};
 
     std::vector<Vertex3D> _vertices;
     std::vector<uint32_t> _indices;
     std::vector<TextureCube> _textures;
+    std::vector<glm::vec3> _normals;
 
     uint _indice = 0;
 
@@ -54,9 +56,18 @@ struct OpenGlWrapper {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        glBindVertexArray(0);
+        // normals
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glGenBuffers(1, &_nor);
+
+        glBindBuffer(GL_ARRAY_BUFFER, _nor);
+        glEnableVertexAttribArray(4);
+
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glBindVertexArray(0);
     }
 
     void updateVertices() {
@@ -86,7 +97,21 @@ struct OpenGlWrapper {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         } else {
             std::string message;
-            message += "Vertices array is empty";
+            message += "Textures array is empty";
+            std::cerr << message << '\n';
+            throw std::runtime_error { message };
+        }
+    }
+
+    void updateNormals() {
+
+        if (!_normals.empty()) {
+            glBindBuffer(GL_ARRAY_BUFFER, _nor);
+            glBufferData(GL_ARRAY_BUFFER, _normals.size() * sizeof(glm::vec3), &_normals.front(), GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        } else {
+            std::string message;
+            message += "Normals array is empty";
             std::cerr << message << '\n';
             throw std::runtime_error { message };
         }
