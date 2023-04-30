@@ -1,5 +1,19 @@
 #version 330 core
 
+struct Sun {
+    vec3 color;
+    vec3 position;
+};
+
+struct Spot {
+    vec3 color;
+    vec3 position;
+    vec3 direction;
+};
+
+uniform Sun sun;
+uniform Spot spotBoat;
+
 in vec3 vColor;
 
 in vec2 vTexCoord;
@@ -18,13 +32,11 @@ uniform sampler2D ar2;
 uniform sampler2D ar3;
 uniform sampler2D gShadowMap;
 
-uniform vec3 lightColor;
-uniform vec3 lightPosition;
 uniform vec3 camPos;
 
-vec4 direcLight(vec4 textureColor) {
+vec4 sunLight(vec4 textureColor) {
 
-	vec3 lightVec = lightPosition - vec3(0); // lightDirection sun
+	vec3 lightVec = sun.position - vec3(0); // lightDirection sun
 
 	// ambient lighting
 	float ambient = 0.45f;
@@ -42,7 +54,20 @@ vec4 direcLight(vec4 textureColor) {
 	float specular = specAmount * specularLight;
 
 
-	return (textureColor * (diffuse + ambient) + 0.5 * specular) * vec4(lightColor,1.0);
+	return (textureColor * (diffuse + ambient) + 0.5 * specular) * vec4(sun.color,1.0);
+}
+
+vec4 spotLight(vec4 textureColor) {
+
+    vec3 lightDirection = normalize(spotBoat.position - crntPos);
+
+    float theta = dot(lightDirection, normalize(spotBoat.direction));
+    if(theta > 0.978147) {
+        return textureColor + vec4(spotBoat.color,1.0) / 2.0;
+    }else {
+        return textureColor;
+    }
+	
 }
 
 void main() {
@@ -74,6 +99,7 @@ void main() {
         }
     }
 
-    fFragColor = direcLight(fFragColor);
+    fFragColor = sunLight(fFragColor);
+    fFragColor = spotLight(fFragColor);
     fFragColor = fFragColor - vec4(1) * visibility;
 }

@@ -55,6 +55,6 @@ void main()
 	LightSpacePos = DepthMVP * vec4(crntPos,1);
 
 	gl_Position = projection * view * model * vec4(crntPos, 1.0);
-	crntPos = gl_Position.xyz;
+	crntPos = (model * vec4(crntPos, 1.0)).xyz;
 	
 }

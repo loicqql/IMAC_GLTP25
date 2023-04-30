@@ -29,6 +29,9 @@ public:
         return _position;
     }
 
+    glm::vec3 getPosLight();
+    glm::vec3 getDirection();
+
     inline glm::vec3 getRot() {
         return _rotation;
     }

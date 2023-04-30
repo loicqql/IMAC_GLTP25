@@ -28,7 +28,7 @@ in vec4 LightSpacePos;
 
 uniform sampler2D gShadowMap;
 
-vec4 direcLight()
+vec4 sunLight()
 {
 
 	vec3 lightVec = lightPosition - vec3(0); // lightDirection sun
@@ -85,6 +85,6 @@ void main() {
 
 	// outputs final color
 	
-	FragColor = direcLight();
+	FragColor = sunLight();
 	FragColor = FragColor - vec4(1) * inshadow;
 }

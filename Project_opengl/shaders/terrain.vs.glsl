@@ -31,6 +31,7 @@ void main()
 	Normal = normalMatrix * aNormal;
 
 	vec4 position = model * vec4(aPos, 1.0);
+	crntPos = position.xyz;
 	gl_ClipDistance[0] = dot(position, plane);
 
 	vColor = aColor;
@@ -38,5 +39,4 @@ void main()
 	vTexId = aTexId;
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
 	LightSpacePos = DepthMVP * vec4(aPos,1);
-	crntPos = gl_Position.xyz;
 }

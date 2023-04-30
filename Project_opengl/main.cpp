@@ -127,11 +127,13 @@ int main() {
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    glm::vec3 sunColor = { 1.0, 1.0, 1.0 };
     glm::vec3 sunPosition = { -0.5, 0.5, -0.5 };
 
-    setAllUniform("lightPosition", sunPosition);
-    setAllUniform("lightColor", sunColor);
+    setAllUniform("sun.position", sunPosition);
+    setAllUniform("sun.color", glm::vec3(1.0, 1.0, 1.0));
+
+    setAllUniform("spotBoat.color", glm::vec3(1.0, 1.0, 0.50));
+    setAllUniform("spotBoat.direction", glm::vec3(0.0, 0.0, 1.0));
 
     GLuint textureUnit = 0;
 
@@ -203,6 +205,8 @@ int main() {
         moveWater += WAVE_SPEED * ctx.delta_time();
 
         boat.update(ctx);
+        setAllUniform("spotBoat.position", boat.getPosLight());
+        setAllUniform("spotBoat.direction", boat.getDirection());
         camera.update(ctx, boat);
         glm::vec3 posCam = camera.getPos();
         setAllUniform("camPos", posCam);

@@ -2,11 +2,12 @@
 
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_transform.hpp"
+#include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 Boat::Boat() {
 
-    _position = { -0.5, 0, 0.4 };
+    _position = { -0.5, 0, 0.0 };
     // _position = {-1, 0, -1};
     _rotation = { 0, 0, 0 };
 
@@ -75,4 +76,12 @@ void Boat::draw(const p6::Shader& shader) {
 
     // shader.set("model", base);
     // bleu.draw();
+}
+
+glm::vec3 Boat::getPosLight() {
+    return glm::vec3(_position.x, 0.05, _position.z);
+}
+
+glm::vec3 Boat::getDirection() {
+    return glm::vec3(glm::cos(_rotation.y), 0, glm::sin(_rotation.y));
 }
