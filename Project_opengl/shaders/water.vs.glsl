@@ -11,8 +11,7 @@ uniform vec3 lightPosition;
 
 out vec4 clipSpace;
 out vec2 textureCoords;
-out vec3 toCameraVector;
-out vec3 fromLightVector;
+out vec3 crntPos;
 
 const float tiling = 4;
 
@@ -22,6 +21,5 @@ void main()
 	clipSpace = projection * view * worldPosition;
 	gl_Position = clipSpace;
 	textureCoords = vec2(aPos.x, aPos.y) * tiling;
-	toCameraVector = camPos - worldPosition.xyz;
-	fromLightVector = worldPosition.xyz - lightPosition;
+	crntPos = worldPosition.xyz;
 }

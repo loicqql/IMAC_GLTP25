@@ -134,6 +134,8 @@ int main() {
 
     setAllUniform("spotBoat.color", glm::vec3(1.0, 1.0, 0.50));
     setAllUniform("spotBoat.direction", glm::vec3(0.0, 0.0, 1.0));
+    setAllUniform("spotBoat.cutOff", 0.99f);
+    setAllUniform("spotBoat.outerCutOff", 0.90f);
 
     GLuint textureUnit = 0;
 

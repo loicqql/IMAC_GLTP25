@@ -3,6 +3,22 @@
 // Outputs colors in RGBA
 out vec4 FragColor;
 
+struct Sun {
+    vec3 color;
+    vec3 position;
+};
+
+struct Spot {
+    vec3 color;
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
+};
+
+uniform Sun sun;
+uniform Spot spotBoat;
+
 // Imports the current position from the Vertex Shader
 in vec3 crntPos;
 // Imports the normal from the Vertex Shader
@@ -17,10 +33,7 @@ in vec2 texCoord;
 // Gets the Texture Units from the main function
 uniform sampler2D diffuse0;
 uniform sampler2D specular0;
-// Gets the color of the light from the main function
-uniform vec3 lightColor;
-// Gets the position of the light from the main function
-uniform vec3 lightPosition;
+
 // Gets the position of the camera from the main function
 uniform vec3 camPos;
 
@@ -31,16 +44,10 @@ uniform sampler2D gShadowMap;
 vec4 sunLight()
 {
 
-	vec3 lightVec = lightPosition - vec3(0); // lightDirection sun
+	vec3 lightVec = sun.position - vec3(0); // lightDirection sun
 
 	// ambient lighting
 	float ambient = 0.25f;
-
-	// intensity of light with respect to distance
-	// float dist = length(lightVec);
-	// float a = 3.0;
-	// float b = 0.7;
-	// float inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
 
 	// diffuse lighting
 	vec3 normal = normalize(Normal);
@@ -55,8 +62,20 @@ vec4 sunLight()
 	float specular = specAmount * specularLight;
 
 
-	return (texture(diffuse0, texCoord) * (diffuse + ambient) + 1.0 * specular) * vec4(lightColor,1.0);
+	return (texture(diffuse0, texCoord) * (diffuse + ambient) + 1.0 * specular) * vec4(sun.color,1.0);
 	// return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular * inten) * lightColor;
+}
+
+vec4 spotLight(vec4 textureColor) {
+
+    vec3 lightDirection = normalize(spotBoat.position - crntPos);
+
+    float theta = dot(lightDirection, normalize(spotBoat.direction));
+    float epsilon = spotBoat.cutOff - spotBoat.outerCutOff;
+    float intensity = clamp((theta - spotBoat.outerCutOff) / epsilon, 0.0, 1.0); 
+
+    return textureColor + (vec4(spotBoat.color,1.0) / 3.0 ) * intensity;
+	
 }
 
 void main() {
@@ -86,5 +105,6 @@ void main() {
 	// outputs final color
 	
 	FragColor = sunLight();
+	FragColor = spotLight(FragColor);
 	FragColor = FragColor - vec4(1) * inshadow;
 }
