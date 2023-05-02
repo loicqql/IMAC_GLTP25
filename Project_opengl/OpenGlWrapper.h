@@ -25,7 +25,7 @@ struct OpenGlWrapper {
     std::vector<TextureCube> _textures;
     std::vector<glm::vec3> _normals;
 
-    uint _indice = 0;
+    int _indice = 0;
 
     OpenGlWrapper() {
 
@@ -74,7 +74,7 @@ struct OpenGlWrapper {
 
         if (!_vertices.empty() && !_indices.empty()) {
             std::vector<Vertex3D> vertex;
-            for (uint i : _indices) {
+            for (int i : _indices) {
                 vertex.push_back(_vertices[i]);
             }
 

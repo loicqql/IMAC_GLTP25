@@ -6,7 +6,7 @@
 
 inline void initSkybox(OpenGlWrapper& cube) {
 
-    uint indice = 0;
+    int indice = 0;
 
     float cube_height2 = 10.0;
     float z = 0.05;

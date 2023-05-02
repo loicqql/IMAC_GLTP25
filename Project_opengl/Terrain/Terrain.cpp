@@ -101,7 +101,7 @@ void Terrain::initOcean() {
 
 void Terrain::makeCube(float x, float y, float dx, float dy, float z, float height, glm::vec3 colorTop, glm::vec3 colorBottom, OpenGlWrapper& wrapper, Cube type) {
 
-    uint indice = wrapper._indice;
+    int indice = wrapper._indice;
 
     //top
     wrapper._vertices.push_back(Vertex3D { { x, y, z + height / 2.0 }, colorTop });
