@@ -35,4 +35,4 @@ bin
 .vscode
 
 sauv/
-loaderGLTF/
+/loaderGLTF/

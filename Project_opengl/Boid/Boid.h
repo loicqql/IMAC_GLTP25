@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../loaders/gltf/loaderGLTF.h"
 #include "p6/p6.h"
 #include <glm/glm.hpp>
 #include <vector>
@@ -16,7 +15,7 @@ private:
     glm::vec3 _acceleration {};
     glm::vec3 _velocity {};
 
-    loaderGLTF main;
+    // loaderGLTF main;
 
 public:
     void init();

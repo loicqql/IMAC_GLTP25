@@ -107,6 +107,6 @@ void loadAndBindCubemap(const p6::Shader& shader, const std::vector<std::filesys
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture_id);
 }
 
-inline glm::mat3 normalMatrix(const glm::mat4& model) {
+inline glm::mat3 getNormalMatrix(const glm::mat4& model) {
     return glm::mat3(glm::transpose(glm::inverse(model)));
 }

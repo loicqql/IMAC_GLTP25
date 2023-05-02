@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../loaders/gltf/loaderGLTF.h"
 #include "glm/fwd.hpp"
 #include "p6/p6.h"
 
@@ -9,9 +8,9 @@ private:
     glm::vec3 _position {};
     glm::vec3 _rotation {};
 
-    loaderGLTF main;
-    loaderGLTF rouge;
-    loaderGLTF bleu;
+    // loaderGLTF main;
+    // loaderGLTF rouge;
+    // loaderGLTF bleu;
 
     float width = 0.02;
     float speed = 0.0;

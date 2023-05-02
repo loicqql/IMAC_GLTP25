@@ -79,7 +79,7 @@ void Boid::draw(unsigned int modelLoc) {
 
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(base));
 
-    main.draw();
+    // main.draw();
 }
 
 // rules
