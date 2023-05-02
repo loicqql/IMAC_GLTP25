@@ -8,7 +8,7 @@ on:
     branches: [ build_windows ]
 
 env:
-  TARGET: Project_opengl_exe # Should be the name of the target you created in your CMakeLists.txt and want to build and run
+  TARGET: Project_opengl # Should be the name of the target you created in your CMakeLists.txt and want to build and run
 
 jobs:
   Windows_MSVC_Release:
@@ -23,7 +23,7 @@ jobs:
       run: cmake .\ -B ${{github.workspace}}\build -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl
 
     - name: Build
-      run: cmake --build ${{github.workspace}}\build --config Release --target ${{env.TARGET}}
+      run: cmake --build ${{github.workspace}}\build --config Release --target ${{env.TARGET}}_exe
 
     - name: Run
-      run: ${{github.workspace}}\build\Release\${{env.TARGET}} -nogpu
+      run: ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe -nogpu
