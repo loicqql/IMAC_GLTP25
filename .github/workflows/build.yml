@@ -24,9 +24,6 @@ jobs:
 
     - name: Build
       run: cmake --build ${{github.workspace}}\build --config Release --target ${{env.TARGET}}_exe
-
-    - name: Run
-      run: ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe -nogpu
       
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
