@@ -32,4 +32,4 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe.exe
+          .\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe.exe
