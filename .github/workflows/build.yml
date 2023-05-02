@@ -27,12 +27,12 @@ jobs:
 
     - name: Run
       run: ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe -nogpu
-
+      
     - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe.exe
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          ${{github.workspace}}\bin\${{env.TARGET}}\Release\${{env.TARGET}}_exe.exe
