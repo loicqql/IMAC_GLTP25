@@ -1,11 +1,6 @@
 name: Build
 
-on: 
-  push:
-    branches: [ build_windows ]
-
-  pull_request:
-    branches: [ build_windows ]
+on: workflow_dispatch
 
 env:
   TARGET: Project_opengl # Should be the name of the target you created in your CMakeLists.txt and want to build and run
