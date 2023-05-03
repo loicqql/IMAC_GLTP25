@@ -39,7 +39,7 @@ uniform vec3 camPos;
 
 vec4 sunLight(vec4 textureColor) {
 
-	vec3 lightVec = sun.position - vec3(0); // lightDirection sun
+	vec3 lightVec = vec3(0) - sun.position; // lightDirection sun
 
 	// ambient lighting
 	float ambient = 0.45f;

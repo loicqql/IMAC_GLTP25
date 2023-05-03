@@ -122,7 +122,7 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._indices.push_back(indice + 1);
     wrapper._indices.push_back(indice + 0);
     repeat(6, [&] {
-        wrapper._normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+        wrapper._normals.push_back(glm::vec3(0.0, 1.0, 0.0));
     });
 
     wrapper._indices.push_back(indice + 3);
@@ -132,7 +132,7 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._indices.push_back(indice + 7);
     wrapper._indices.push_back(indice + 3);
     repeat(6, [&] {
-        wrapper._normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+        wrapper._normals.push_back(glm::vec3(0.0, -1.0, 0.0));
     });
 
     wrapper._indices.push_back(indice);
@@ -141,20 +141,20 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 3);
     wrapper._indices.push_back(indice);
-    repeat(6, [&] {
-        wrapper._normals.push_back(glm::vec3(0.0, 0.0, 1.0));
-    });
-
-    wrapper._indices.push_back(indice + 4);
-    wrapper._indices.push_back(indice + 7);
-    wrapper._indices.push_back(indice + 6);
-    wrapper._indices.push_back(indice + 6);
-    wrapper._indices.push_back(indice + 5);
-    wrapper._indices.push_back(indice + 4);
     repeat(6, [&] {
         wrapper._normals.push_back(glm::vec3(0.0, 0.0, -1.0));
     });
 
+    wrapper._indices.push_back(indice + 4);
+    wrapper._indices.push_back(indice + 7);
+    wrapper._indices.push_back(indice + 6);
+    wrapper._indices.push_back(indice + 6);
+    wrapper._indices.push_back(indice + 5);
+    wrapper._indices.push_back(indice + 4);
+    repeat(6, [&] {
+        wrapper._normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    });
+
     wrapper._indices.push_back(indice + 1);
     wrapper._indices.push_back(indice + 5);
     wrapper._indices.push_back(indice + 6);
@@ -162,7 +162,7 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._indices.push_back(indice + 2);
     wrapper._indices.push_back(indice + 1);
     repeat(6, [&] {
-        wrapper._normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+        wrapper._normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
     });
 
     wrapper._indices.push_back(indice + 4);
@@ -172,7 +172,7 @@ void Terrain::makeCube(float x, float y, float dx, float dy, float z, float heig
     wrapper._indices.push_back(indice + 7);
     wrapper._indices.push_back(indice + 4);
     repeat(6, [&] {
-        wrapper._normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+        wrapper._normals.push_back(glm::vec3(1.0, 0.0, 0.0));
     });
 
     std::random_device rd;
