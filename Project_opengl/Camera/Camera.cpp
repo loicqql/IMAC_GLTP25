@@ -10,17 +10,13 @@ Camera::Camera() {
     rotationy_delta_user = 0.f;
 }
 
-void Camera::update(p6::Context& ctx, Boat& boat) {
-
-    if (intro > 0.03) {
-        intro -= 0.04;
-    } else if (intro > 0.004) {
-        intro -= 0.004;
-    }
+void Camera::update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 targetRotation) {
 
     float force_reset_rotationx_delta_user = 0.005f;
-    glm::vec3 position = boat.getPos();
-    glm::vec3 rotation = boat.getRot();
+
+    _targetPosition = targetPosition;
+    glm::vec3 position = targetPosition;
+    glm::vec3 rotation = targetRotation;
 
     glm::vec2 mouse = ctx.mouse();
 
@@ -55,13 +51,23 @@ void Camera::update(p6::Context& ctx, Boat& boat) {
     x_mouse = mouse.x;
     y_mouse = mouse.y;
 
-    if ((height + rotationy_delta_user) < position.y) {
-        rotationy_delta_user = position.y - height;
-    }
+    float x = glm::cos(rotation.y + rotationx_delta_user) * distance + position.x;
+    float z = glm::sin(rotation.y + rotationx_delta_user) * distance + position.z;
+    float y = _targetPosition.y + defaultHeight + rotationy_delta_user;
 
-    this->_position = { glm::cos(rotation.y + rotationx_delta_user) * distance + position.x, height + rotationy_delta_user + intro, glm::sin(rotation.y + rotationx_delta_user) * distance + position.z };
+    _position = { x, y, z };
+
+    const float OCEAN_HEIGHT = 0.0f; // to do
+
+    if (_position.y < OCEAN_HEIGHT + 0.01f) {
+        _position.y = OCEAN_HEIGHT + 0.01f;
+    }
 }
 
 glm::vec3 Camera::getPos() {
     return this->_position;
+}
+
+glm::vec3 Camera::getTargetPos() {
+    return _targetPosition;
 }

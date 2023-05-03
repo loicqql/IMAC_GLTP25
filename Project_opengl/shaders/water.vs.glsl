@@ -6,7 +6,6 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 camPos;
 uniform vec3 lightPosition;
 
 out vec4 clipSpace;

@@ -24,6 +24,7 @@
 #include "Shadow/ShadowFrameBuffers.h"
 #include "Water/WaterFrameBuffers.h"
 
+#include "./Ballon/Ballon.h"
 #include "./Environment.h"
 #include "./loaderGLTF/loaderGLTF.h"
 
@@ -51,6 +52,7 @@ int main() {
     Terrain terrain;
     WaterFrameBuffers waterfbos;
     ShadowFrameBuffers shadowMap;
+    Ballon ballon;
 
     OpenGlWrapper skybox;
     initSkybox(skybox);
@@ -190,9 +192,20 @@ int main() {
         moveWater += WAVE_SPEED * ctx.delta_time();
 
         boat.update(ctx);
+
+        if (ctx.key_is_pressed(GLFW_KEY_J)) {
+            ballon.setActive(boat.getPos());
+        }
+        ballon.update(ctx);
+
         setAllUniform("spotBoat.position", boat.getPosLight());
         setAllUniform("spotBoat.direction", boat.getDirection());
-        camera.update(ctx, boat);
+        if (ballon.getActive()) {
+            camera.update(ctx, ballon.getPosition(), { 0, 0, 0 });
+        } else {
+            camera.update(ctx, boat.getPos(), boat.getRot());
+        }
+
         glm::vec3 posCam = camera.getPos();
         setAllUniform("camPos", posCam);
 
@@ -215,12 +228,14 @@ int main() {
         shaderGLTF.set("projection", shadowProj);
         shaderGLTF.set("view", shadowView);
         castleCentre.draw(shaderGLTF);
+        ballon.draw(shaderGLTF);
         shaderGLTF.set("projection", projection);
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
         setAllUniform("DepthMVP", DepthMVP);
         castleCentre.setDepthMVP(shadowProj, shadowView);
+        ballon.setDepthMVP(shadowProj, shadowView);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 1280, 720);
@@ -232,7 +247,9 @@ int main() {
         glm::vec3 posCamReflection = posCam;
         float distance = 2 * (posCam.y - OCEAN_HEIGHT);
         posCamReflection.y -= distance;
-        setAllUniform("view", glm::lookAt(posCamReflection, boat.getPos() - offsetCenterCamera, { 0, 1, 0 }));
+        glm::vec3 targetCamera = camera.getTargetPos();
+        targetCamera.y = -targetCamera.y;
+        setAllUniform("view", glm::lookAt(posCamReflection, targetCamera - offsetCenterCamera, { 0, 1, 0 }));
         setAllUniform("plane", glm::vec4(0, 1, 0, -OCEAN_HEIGHT));
         waterfbos.bindReflectionFrameBuffer();
 
@@ -248,6 +265,7 @@ int main() {
         terrain.drawMountainSmall();
 
         shaderSkybox.use();
+        shaderSkybox.set("plane", glm::vec4(0, 0, -1, OCEAN_HEIGHT));
         skybox.draw();
 
         /*
@@ -257,10 +275,11 @@ int main() {
 
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
+        ballon.draw(shaderGLTF);
 
         waterfbos.unbindCurrentFrameBuffer();
 
-        view = glm::lookAt(posCam, boat.getPos() + offsetCenterCamera, { 0, 1, 0 });
+        view = glm::lookAt(posCam, camera.getTargetPos() + offsetCenterCamera, { 0, 1, 0 });
         setAllUniform("view", view);
 
         // ---------------------------------
@@ -280,14 +299,17 @@ int main() {
         terrain.drawMountainSmall();
 
         shaderSkybox.use();
+        shaderSkybox.set("plane", glm::vec4(0, 0, 1, OCEAN_HEIGHT));
         skybox.draw();
 
         shaderCube.use();
         boat.draw(shaderCube);
-        waterfbos.unbindCurrentFrameBuffer();
 
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
+        ballon.draw(shaderGLTF);
+
+        waterfbos.unbindCurrentFrameBuffer();
 
         // ---------------------------------
         // RENDER TO SCREEN
@@ -304,6 +326,7 @@ int main() {
         terrain.drawMountainSmall();
 
         shaderSkybox.use();
+        shaderSkybox.set("plane", glm::vec4(0, 0, 1, 100));
         skybox.draw();
 
         shaderWater.use();
@@ -312,6 +335,7 @@ int main() {
 
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
+        ballon.draw(shaderGLTF);
 
         // for (uint i = 0; i < boids.size(); ++i) {
         //     boids[i].update(ctx, boids);
