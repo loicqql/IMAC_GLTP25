@@ -9,7 +9,7 @@ private:
     std::vector<loaderGLTF> ballons;
     bool active = false;
     glm::vec3 position = { -0.5, 0, 0 };
-    int pv = 0;
+    float pv = 0;
 
 public:
     Ballon();

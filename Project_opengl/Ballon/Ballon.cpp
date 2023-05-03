@@ -42,7 +42,7 @@ void Ballon::update(p6::Context& ctx) {
     }
 
     if (position.y >= 0.8) { //dev
-        pv = 0;
+        pv -= 0.1;
     } else {
         position += glm::vec3(0, 0.05, 0) * ctx.delta_time();
     }

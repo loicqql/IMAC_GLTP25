@@ -4,6 +4,8 @@
 #include "glm/ext/quaternion_transform.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/trigonometric.hpp"
+#include <iostream>
 
 Boat::Boat() {
 
@@ -55,6 +57,8 @@ void Boat::update(p6::Context& ctx) {
         }
     }
 
+    pitchEffect(ctx);
+
     this->_position = { glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z };
 }
 
@@ -78,10 +82,28 @@ void Boat::draw(const p6::Shader& shader) {
     // bleu.draw();
 }
 
+void Boat::pitchEffect(p6::Context& ctx) {
+    float max = glm::radians(5.f);
+
+    if (pitch) {
+        pitchi += 0.5f * ctx.delta_time();
+    } else {
+        pitchi -= 0.5f * ctx.delta_time();
+    }
+    if (pitchi > 1) {
+        pitch = false;
+    }
+    if (pitchi < 0) {
+        pitch = true;
+    }
+
+    _rotation.x = (cubicBezier.valueAt(pitchi, 0) - 0.5) * 2.0 * max;
+}
+
 glm::vec3 Boat::getPosLight() {
     return glm::vec3(_position.x, 0.05, _position.z);
 }
 
 glm::vec3 Boat::getDirection() {
-    return glm::vec3(glm::cos(_rotation.y), 0, glm::sin(_rotation.y));
+    return glm::vec3(glm::cos(_rotation.y), glm::sin(_rotation.x), glm::sin(_rotation.y));
 }

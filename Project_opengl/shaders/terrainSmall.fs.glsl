@@ -9,6 +9,7 @@ struct Spot {
     vec3 color;
     vec3 position;
     vec3 direction;
+    float strength;
     float cutOff;
     float outerCutOff;
 };
@@ -65,7 +66,7 @@ vec4 spotLight(vec4 textureColor) {
     float epsilon = spotBoat.cutOff - spotBoat.outerCutOff;
     float intensity = clamp((theta - spotBoat.outerCutOff) / epsilon, 0.0, 1.0); 
 
-    return textureColor + (vec4(spotBoat.color,1.0) / 3.0 ) * intensity;
+    return textureColor + ((vec4(spotBoat.color,1.0) / 3.0 ) * intensity) * spotBoat.strength;
 	
 }
 

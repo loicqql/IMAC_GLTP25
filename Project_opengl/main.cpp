@@ -132,7 +132,8 @@ int main() {
     setAllUniform("sun.position", sunPosition);
     setAllUniform("sun.color", glm::vec3(1.0, 1.0, 1.0));
 
-    setAllUniform("spotBoat.color", glm::vec3(1.0, 1.0, 0.50));
+    setAllUniform("spotBoat.color", glm::vec3(1.0, 1.0, 0.90));
+    setAllUniform("spotBoat.strength", 0.8f);
     setAllUniform("spotBoat.direction", glm::vec3(0.0, 0.0, 1.0));
     setAllUniform("spotBoat.cutOff", 0.99f);
     setAllUniform("spotBoat.outerCutOff", 0.90f);

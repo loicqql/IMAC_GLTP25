@@ -9,6 +9,7 @@ struct Spot {
     vec3 color;
     vec3 position;
     vec3 direction;
+    float strength;
     float cutOff;
     float outerCutOff;
 };
@@ -86,7 +87,7 @@ void main()
     vec3 reflectedSpot = reflect(normalize(fromSpotVector), normal);
 	float specularSpot = max(dot(reflectedSpot, viewVector), 0.0);
 	specularSpot = pow(specularSpot, shineDamper * 3);
-	vec3 specularHighlightsSpot = spotBoat.color * specularSpot * (reflectivity * 0.7);
+	vec3 specularHighlightsSpot = spotBoat.color * specularSpot * (reflectivity * 0.7) * spotBoat.strength;
 
     //Spot Projected
     vec3 reflectedProjectedSpot = reflect(normalize(-fromSpotVector), normal);
