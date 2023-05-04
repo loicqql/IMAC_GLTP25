@@ -23,7 +23,7 @@ jobs:
     - name: Zip files
       uses: vimtor/action-zip@v1
       with:
-        files: ${{github.workspace}}\bin\${{env.TARGET}}\
+        files: /bin/${{env.TARGET}}/
         dest: OpenGL-Windows.zip
       
     - name: Release
