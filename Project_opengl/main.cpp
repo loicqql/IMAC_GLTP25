@@ -181,7 +181,7 @@ int main() {
 
     glActiveTexture(GL_TEXTURE0 + textureUnit + 1); // ?
 
-    loaderGLTF castleCentre("./assets/test/droneGLTF.gltf", getModelCasleCentre());
+    loaderGLTF castleCentre("./assets/models/castle/centre/centre.gltf", getModelCasleCentre());
     shaderGLTF.use();
     shaderGLTF.set("projection", projection);
 
