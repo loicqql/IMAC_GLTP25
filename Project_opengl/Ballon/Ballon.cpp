@@ -41,9 +41,7 @@ void Ballon::update(p6::Context& ctx) {
         return;
     }
 
-    if (position.y >= 0.8) { //dev
-        pv -= 0.1;
-    } else {
+    if (position.y < 1.0) {
         position += glm::vec3(0, 0.05, 0) * ctx.delta_time();
     }
     if (pv <= 0) {
@@ -65,4 +63,8 @@ glm::mat4 Ballon::getModel() {
     model = glm::scale(model, glm::vec3(0.03));
 
     return model;
+}
+
+void Ballon::hit() {
+    pv -= 0.10;
 }

@@ -5,6 +5,7 @@
 #include "glm/gtx/rotate_vector.hpp"
 
 #include "./OpenGlWrapper.h"
+#include "./const.h"
 #include "./skybox.h"
 #include "./utils.h"
 
@@ -39,22 +40,21 @@ int main() {
     std::uniform_real_distribution<double> randPosition(-1.0, 1.0);
     std::uniform_real_distribution<double> randVelocity(-0.005, 0.005);
 
-    std::vector<Boid> boids;
-
-    for (int i = 0; i < 25; ++i) {
-        Boid boid(glm::vec3(randPosition(mt), 1, randPosition(mt)), glm::vec3(randVelocity(mt), randVelocity(mt), randVelocity(mt)));
-        boids.emplace_back(boid);
-    }
-
     Camera camera;
     Boat boat;
     Terrain terrain;
     WaterFrameBuffers waterfbos;
     ShadowFrameBuffers shadowMap;
     Ballon ballon;
-
     OpenGlWrapper skybox;
     initSkybox(skybox);
+
+    std::vector<Boid> boids;
+
+    for (int i = 0; i < 25; ++i) {
+        Boid boid(glm::vec3(randPosition(mt), 1, randPosition(mt)), glm::vec3(randVelocity(mt), randVelocity(mt), randVelocity(mt)));
+        boids.emplace_back(boid);
+    }
 
     const float WAVE_SPEED = 0.05f;
     float moveWater = 0;
@@ -186,7 +186,6 @@ int main() {
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
-        const float OCEAN_HEIGHT = 0.f;
         const glm::vec3 offsetCenterCamera = glm::vec3(0, 0.04, 0);
 
         moveWater += WAVE_SPEED * ctx.delta_time();
@@ -205,8 +204,6 @@ int main() {
         } else {
             camera.update(ctx, boat.getPos(), boat.getRot());
         }
-
-        camera.update(ctx, boids[0].getPosition(), boat.getRot());
 
         glm::vec3 posCam = camera.getPos();
         setAllUniform("camPos", posCam);
@@ -351,7 +348,7 @@ int main() {
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         for (Boid& boid : boids) {
-            boid.update(boids);
+            boid.update(boids, ballon);
             boid.draw(shaderGLTF);
         }
     };

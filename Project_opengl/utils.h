@@ -4,6 +4,7 @@
 #include "glm/matrix.hpp"
 #include "p6/p6.h"
 #include <glm/glm.hpp>
+#include <math.h>
 #include <utility>
 
 template <typename F>
@@ -35,6 +36,10 @@ inline float float_limit(float f, float limit, bool floor) {
 
 inline float vec3_average(glm::vec3 vec) {
     return (vec.x + vec.y + vec.z) / 3.f;
+}
+
+inline bool vec3_isnan(glm::vec3& vec) {
+    return !isnan(vec.x) && !isnan(vec.y) && !isnan(vec.z);
 }
 
 inline float float_map(float x, float x_min, float x_max) {

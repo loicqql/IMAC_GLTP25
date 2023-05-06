@@ -3,7 +3,6 @@
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include <cmath>
-#include <math.h>
 
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/quaternion_transform.hpp"
@@ -19,46 +18,56 @@ Boid::Boid(glm::vec3 position, glm::vec3 velocity) {
     _acceleration = glm::vec3(0, 0, 0);
     _velocity = velocity;
 
-    boids.emplace_back(loaderGLTF("./assets/test/droneGLTF.gltf", getModel()));
-    boids[0].setModelMatrix(getModel());
+    _boids.emplace_back(loaderGLTF("./assets/test/droneGLTF.gltf", getModel()));
+    _boids[0].setModelMatrix(getModel());
 }
 
 //update && draw
 
-void Boid::update(std::vector<Boid>& boids) {
+void Boid::update(std::vector<Boid>& boids, Ballon& ballon) {
 
     float ratio_separation = 0.0008;
     float ratio_alignment = 0.0008;
     float ratio_cohesion = 0.0008;
     float ratio_returnToCenter = (ratio_separation + ratio_alignment + ratio_cohesion) / 3.0f;
+    float ratio_seek = 0.008;
 
     float direction = std::atan2(_velocity.z, _velocity.x);
-
-    // _acceleration += seek(ctx);
 
     if (outOfBounds()) {
         glm::vec3 returnToCenter_force = returnToCenter();
         returnToCenter_force *= ratio_returnToCenter;
-        if (!isnan(returnToCenter_force.x) && !isnan(returnToCenter_force.y) && !isnan(returnToCenter_force.z)) {
+        if (_position.y < 0) {
+            returnToCenter_force *= 50.f;
+        }
+        if (vec3_isnan(returnToCenter_force)) {
             _acceleration += returnToCenter_force;
         }
     } else {
         glm::vec3 separation_force = separation(boids);
         separation_force *= ratio_separation;
-        if (!isnan(separation_force.x) && !isnan(separation_force.y) && !isnan(separation_force.z)) {
+        if (vec3_isnan(separation_force)) {
             _acceleration += separation_force;
         }
 
         glm::vec3 alignment_force = alignment(boids);
         alignment_force *= ratio_alignment;
-        if (!isnan(alignment_force.x) && !isnan(alignment_force.y) && !isnan(alignment_force.z)) {
+        if (vec3_isnan(alignment_force)) {
             _acceleration += alignment_force;
         }
 
         glm::vec3 cohesion_force = cohesion(boids);
         cohesion_force *= ratio_cohesion;
-        if (!isnan(cohesion_force.x) && !isnan(cohesion_force.y) && !isnan(cohesion_force.z)) {
+        if (vec3_isnan(cohesion_force)) {
             _acceleration += cohesion_force;
+        }
+    }
+
+    if (ballon.getActive()) {
+        glm::vec3 seek_force = seek(ballon);
+        seek_force *= ratio_seek;
+        if (vec3_isnan(seek_force)) {
+            _acceleration += seek_force;
         }
     }
 
@@ -71,8 +80,10 @@ void Boid::update(std::vector<Boid>& boids) {
 
     float rotY = (direction - std::atan2(_velocity.z, _velocity.x)) / 3.0f;
 
-    if (std::fabs(roll += rotY) < 1.2) { // < 70deg
-        roll += rotY;
+    roll += rotY;
+
+    if (std::fabs(roll) > 1.2) { // < 70deg
+        roll -= rotY;
     }
 
     if (rotY < 0.0008) {
@@ -86,34 +97,40 @@ void Boid::update(std::vector<Boid>& boids) {
     }
 
     //reset
-    _acceleration = glm::vec3(0);
+    _acceleration
+        = glm::vec3(0);
 }
 
 void Boid::draw(const p6::Shader& shader) {
-    boids[0].setModelMatrix(getModel());
-    boids[0].draw(shader);
+    _boids[0].setModelMatrix(getModel());
+    _boids[0].draw(shader);
 }
 
 void Boid::setDepthMVP(const glm::mat4& proj, const glm::mat4& view) {
-    boids[0].setDepthMVP(proj, view);
+    _boids[0].setDepthMVP(proj, view);
 }
 
 // rules
 
-glm::vec3 Boid::seek(glm::vec3 positionBallon) {
+glm::vec3 Boid::seek(Ballon& ballon) {
 
     glm::vec3 force { 0 };
+    glm::vec3 positionBallon = ballon.getPosition();
 
     float distance = glm::distance(_position, positionBallon);
-    if (distance < 0.3) {
+    if (distance < 0.18) {
+        ballon.hit();
+        return glm::vec3(0, 0.2f, 0);
+    }
+    if (distance < 1.2) {
         force = positionBallon - _position;
         force = glm::normalize(force);
 
-        force *= 0.005; // max speed
+        force *= 0.05; // max speed
 
         force -= _velocity;
 
-        vec3_limit(force, glm::vec3 { 0.00005 });
+        vec3_limit(force, glm::vec3 { 0.05 });
     }
 
     return force;
@@ -125,7 +142,7 @@ glm::vec3 Boid::separation(std::vector<Boid>& boids) {
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.2) {
+        if (distance > 0 && distance < 0.4) {
             totalForce += (_position - boid._position) / distance;
         }
     }
@@ -149,7 +166,7 @@ glm::vec3 Boid::alignment(std::vector<Boid>& boids) {
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.2) {
+        if (distance > 0 && distance < 0.4) {
             ++i;
             totalForce += boid._velocity;
         }
@@ -174,7 +191,7 @@ glm::vec3 Boid::cohesion(std::vector<Boid>& boids) {
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.2) {
+        if (distance > 0 && distance < 0.4) {
             ++i;
             totalForce += boid._position;
         }

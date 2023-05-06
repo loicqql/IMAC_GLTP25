@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "../const.h"
 #include "glm/fwd.hpp"
 #include "glm/trigonometric.hpp"
 #include <cmath>
@@ -57,11 +58,9 @@ void Camera::update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 target
 
     _position = { x, y, z };
 
-    const float OCEAN_HEIGHT = 0.0f; // to do
-
-    // if (_position.y < OCEAN_HEIGHT + 0.01f) {
-    //     _position.y = OCEAN_HEIGHT + 0.01f;
-    // }
+    if (_position.y < OCEAN_HEIGHT + 0.01f) {
+        _position.y = OCEAN_HEIGHT + 0.01f;
+    }
 }
 
 glm::vec3 Camera::getPos() {

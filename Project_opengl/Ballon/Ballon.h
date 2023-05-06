@@ -8,7 +8,7 @@ class Ballon {
 private:
     std::vector<loaderGLTF> ballons;
     bool active = false;
-    glm::vec3 position = { -0.5, 0, 0 };
+    glm::vec3 position = { 0, 0, 0 };
     float pv = 0;
 
 public:
@@ -22,6 +22,8 @@ public:
     void setActive(glm::vec3 posBoat);
 
     void update(p6::Context& ctx);
+
+    void hit();
 
 private:
     void setModel();

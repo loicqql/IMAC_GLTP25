@@ -1,4 +1,5 @@
 #pragma once
+#include "../Ballon/Ballon.h"
 #include "../loaderGLTF/loaderGLTF.h"
 #include "p6/p6.h"
 #include <glm/glm.hpp>
@@ -11,7 +12,7 @@ private:
     glm::vec3 _acceleration {};
     glm::vec3 _velocity {};
 
-    std::vector<loaderGLTF> boids; // ?
+    std::vector<loaderGLTF> _boids; // ?
 
     float roll = 0.0f;
 
@@ -25,12 +26,12 @@ private:
 public:
     Boid(glm::vec3 position, glm::vec3 velocity);
 
-    void update(std::vector<Boid>& boids);
+    void update(std::vector<Boid>& boids, Ballon& ballon);
     void draw(const p6::Shader& shader);
     void setDepthMVP(const glm::mat4& proj, const glm::mat4& view);
 
     // Rules
-    glm::vec3 seek(glm::vec3 positionBallon);
+    glm::vec3 seek(Ballon& ballon);
     glm::vec3 separation(std::vector<Boid>& boids);
     glm::vec3 alignment(std::vector<Boid>& boids);
     glm::vec3 cohesion(std::vector<Boid>& boids);
