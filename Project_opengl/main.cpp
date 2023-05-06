@@ -37,15 +37,14 @@ int main() {
     std::random_device rd;
     std::mt19937 mt(rd());
     std::uniform_real_distribution<double> randPosition(-1.0, 1.0);
-    std::uniform_real_distribution<double> randVelocity(-0.001, 0.001);
+    std::uniform_real_distribution<double> randVelocity(-0.005, 0.005);
 
-    // std::vector<Boid> boids;
+    std::vector<Boid> boids;
 
-    // for (int i = 0; i < 50; ++i) {
-    //     Boid boid(glm::vec3(randPosition(mt), randPosition(mt), 0.5), glm::vec3(randVelocity(mt), randVelocity(mt), 0));
-    //     boids.emplace_back(boid);
-    //     boids[i].init();
-    // }
+    for (int i = 0; i < 25; ++i) {
+        Boid boid(glm::vec3(randPosition(mt), 1, randPosition(mt)), glm::vec3(randVelocity(mt), randVelocity(mt), randVelocity(mt)));
+        boids.emplace_back(boid);
+    }
 
     Camera camera;
     Boat boat;
@@ -207,6 +206,8 @@ int main() {
             camera.update(ctx, boat.getPos(), boat.getRot());
         }
 
+        camera.update(ctx, boids[0].getPosition(), boat.getRot());
+
         glm::vec3 posCam = camera.getPos();
         setAllUniform("camPos", posCam);
 
@@ -231,12 +232,18 @@ int main() {
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         shaderGLTF.set("projection", projection);
+        for (Boid& boid : boids) {
+            boid.draw(shaderGLTF);
+        }
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
 
         setAllUniform("DepthMVP", DepthMVP);
         castleCentre.setDepthMVP(shadowProj, shadowView);
         ballon.setDepthMVP(shadowProj, shadowView);
+        for (Boid& boid : boids) {
+            boid.setDepthMVP(shadowProj, shadowView);
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, 1280, 720);
@@ -277,6 +284,9 @@ int main() {
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
+        for (Boid& boid : boids) {
+            boid.draw(shaderGLTF);
+        }
 
         waterfbos.unbindCurrentFrameBuffer();
 
@@ -309,6 +319,9 @@ int main() {
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
+        for (Boid& boid : boids) {
+            boid.draw(shaderGLTF);
+        }
 
         waterfbos.unbindCurrentFrameBuffer();
 
@@ -337,11 +350,10 @@ int main() {
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
-
-        // for (uint i = 0; i < boids.size(); ++i) {
-        //     boids[i].update(ctx, boids);
-        //     boids[i].draw(glGetUniformLocation(shaderCube.id(), "model"));
-        // }
+        for (Boid& boid : boids) {
+            boid.update(boids);
+            boid.draw(shaderGLTF);
+        }
     };
 
     // Should be done last. It starts the infinite loop.

@@ -33,8 +33,8 @@ inline float float_limit(float f, float limit, bool floor) {
     return f;
 }
 
-inline float vec2_get_direction(glm::vec2 vec) {
-    return std::atan(vec.y / vec.x);
+inline float vec3_average(glm::vec3 vec) {
+    return (vec.x + vec.y + vec.z) / 3.f;
 }
 
 inline float float_map(float x, float x_min, float x_max) {

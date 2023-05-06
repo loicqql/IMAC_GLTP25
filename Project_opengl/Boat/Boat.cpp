@@ -9,7 +9,7 @@
 
 Boat::Boat() {
 
-    _position = { -0.5, 0, 0 };
+    _position = { 0, 0, 0 };
     // _position = {-1, 0, -1};
     _rotation = { 0, 0, 0 };
 

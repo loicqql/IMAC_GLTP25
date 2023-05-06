@@ -59,9 +59,9 @@ void Camera::update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 target
 
     const float OCEAN_HEIGHT = 0.0f; // to do
 
-    if (_position.y < OCEAN_HEIGHT + 0.01f) {
-        _position.y = OCEAN_HEIGHT + 0.01f;
-    }
+    // if (_position.y < OCEAN_HEIGHT + 0.01f) {
+    //     _position.y = OCEAN_HEIGHT + 0.01f;
+    // }
 }
 
 glm::vec3 Camera::getPos() {
