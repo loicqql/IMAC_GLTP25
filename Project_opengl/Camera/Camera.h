@@ -24,5 +24,6 @@ public:
 
     void update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 targetRotation);
     glm::vec3 getPos();
+    void setPos(glm::vec3 position);
     glm::vec3 getTargetPos();
 };

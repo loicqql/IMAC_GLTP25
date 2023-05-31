@@ -26,15 +26,15 @@ private:
 public:
     Boid(glm::vec3 position, glm::vec3 velocity);
 
-    void update(std::vector<Boid>& boids, Ballon& ballon);
-    void draw(const p6::Shader& shader);
+    void update(std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui);
+    void draw(const p6::Shader& shader, int idMesh);
     void setDepthMVP(const glm::mat4& proj, const glm::mat4& view);
 
     // Rules
     glm::vec3 seek(Ballon& ballon);
-    glm::vec3 separation(std::vector<Boid>& boids);
-    glm::vec3 alignment(std::vector<Boid>& boids);
-    glm::vec3 cohesion(std::vector<Boid>& boids);
+    glm::vec3 separation(std::vector<Boid>& boids, float distance_gui);
+    glm::vec3 alignment(std::vector<Boid>& boids, float distance_gui);
+    glm::vec3 cohesion(std::vector<Boid>& boids, float distance_gui);
     glm::vec3 returnToCenter();
 
     inline glm::vec3 getPosition() { return _position; };

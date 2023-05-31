@@ -21,7 +21,7 @@ void Camera::update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 target
 
     glm::vec2 mouse = ctx.mouse();
 
-    if (ctx.key_is_pressed(GLFW_KEY_G)) {
+    if (ctx.key_is_pressed(GLFW_KEY_R)) {
         rotationx_delta_user = 0;
         rotationy_delta_user = 0;
     }
@@ -65,6 +65,10 @@ void Camera::update(p6::Context& ctx, glm::vec3 targetPosition, glm::vec3 target
 
 glm::vec3 Camera::getPos() {
     return this->_position;
+}
+
+void Camera::setPos(glm::vec3 position) {
+    _position = position;
 }
 
 glm::vec3 Camera::getTargetPos() {

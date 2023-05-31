@@ -25,8 +25,8 @@ void Boat::update(p6::Context& ctx) {
 
     float coeffRot = 0.01;
 
-    bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_S) || ctx.key_is_pressed(GLFW_KEY_A);
-    bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_L) || ctx.key_is_pressed(GLFW_KEY_D);
+    bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_A);
+    bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_D);
 
     if (leftIsPressed && rightIsPressed) {
         speed += 0.003 * ctx.delta_time();

@@ -18,17 +18,19 @@ Boid::Boid(glm::vec3 position, glm::vec3 velocity) {
     _acceleration = glm::vec3(0, 0, 0);
     _velocity = velocity;
 
-    _boids.emplace_back(loaderGLTF("./assets/test/droneGLTF.gltf", getModel()));
+    _boids.emplace_back(loaderGLTF("./assets/models/plane/plane.gltf", getModel()));
+    _boids.emplace_back(loaderGLTF("./assets/models/plane/planeA.gltf", getModel()));
     _boids[0].setModelMatrix(getModel());
+    _boids[1].setModelMatrix(getModel());
 }
 
 //update && draw
 
-void Boid::update(std::vector<Boid>& boids, Ballon& ballon) {
+void Boid::update(std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui) {
 
-    float ratio_separation = 0.0008;
-    float ratio_alignment = 0.0008;
-    float ratio_cohesion = 0.0008;
+    float ratio_separation = 0.0008 * coeff_separation;
+    float ratio_alignment = 0.0008 * coeff_alignment;
+    float ratio_cohesion = 0.0008 * coeff_cohesion;
     float ratio_returnToCenter = (ratio_separation + ratio_alignment + ratio_cohesion) / 3.0f;
     float ratio_seek = 0.008;
 
@@ -44,19 +46,19 @@ void Boid::update(std::vector<Boid>& boids, Ballon& ballon) {
             _acceleration += returnToCenter_force;
         }
     } else {
-        glm::vec3 separation_force = separation(boids);
+        glm::vec3 separation_force = separation(boids, distance_gui);
         separation_force *= ratio_separation;
         if (vec3_isnan(separation_force)) {
             _acceleration += separation_force;
         }
 
-        glm::vec3 alignment_force = alignment(boids);
+        glm::vec3 alignment_force = alignment(boids, distance_gui);
         alignment_force *= ratio_alignment;
         if (vec3_isnan(alignment_force)) {
             _acceleration += alignment_force;
         }
 
-        glm::vec3 cohesion_force = cohesion(boids);
+        glm::vec3 cohesion_force = cohesion(boids, distance_gui);
         cohesion_force *= ratio_cohesion;
         if (vec3_isnan(cohesion_force)) {
             _acceleration += cohesion_force;
@@ -101,13 +103,14 @@ void Boid::update(std::vector<Boid>& boids, Ballon& ballon) {
         = glm::vec3(0);
 }
 
-void Boid::draw(const p6::Shader& shader) {
-    _boids[0].setModelMatrix(getModel());
-    _boids[0].draw(shader);
+void Boid::draw(const p6::Shader& shader, int idMesh) {
+    _boids[idMesh].setModelMatrix(getModel());
+    _boids[idMesh].draw(shader);
 }
 
 void Boid::setDepthMVP(const glm::mat4& proj, const glm::mat4& view) {
     _boids[0].setDepthMVP(proj, view);
+    _boids[1].setDepthMVP(proj, view);
 }
 
 // rules
@@ -136,13 +139,13 @@ glm::vec3 Boid::seek(Ballon& ballon) {
     return force;
 }
 
-glm::vec3 Boid::separation(std::vector<Boid>& boids) {
+glm::vec3 Boid::separation(std::vector<Boid>& boids, float distance_gui) {
 
     auto totalForce = glm::vec3(0);
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.4) {
+        if (distance > 0 && distance < distance_gui) {
             totalForce += (_position - boid._position) / distance;
         }
     }
@@ -158,7 +161,7 @@ glm::vec3 Boid::separation(std::vector<Boid>& boids) {
     return totalForce;
 }
 
-glm::vec3 Boid::alignment(std::vector<Boid>& boids) {
+glm::vec3 Boid::alignment(std::vector<Boid>& boids, float distance_gui) {
 
     auto totalForce = glm::vec3(0);
 
@@ -166,7 +169,7 @@ glm::vec3 Boid::alignment(std::vector<Boid>& boids) {
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.4) {
+        if (distance > 0 && distance < distance_gui) {
             ++i;
             totalForce += boid._velocity;
         }
@@ -183,7 +186,7 @@ glm::vec3 Boid::alignment(std::vector<Boid>& boids) {
     return totalForce;
 }
 
-glm::vec3 Boid::cohesion(std::vector<Boid>& boids) {
+glm::vec3 Boid::cohesion(std::vector<Boid>& boids, float distance_gui) {
 
     auto totalForce = glm::vec3(0);
 
@@ -191,7 +194,7 @@ glm::vec3 Boid::cohesion(std::vector<Boid>& boids) {
 
     for (Boid& boid : boids) {
         float distance = glm::distance(_position, boid._position);
-        if (distance > 0 && distance < 0.4) {
+        if (distance > 0 && distance < distance_gui) {
             ++i;
             totalForce += boid._position;
         }
@@ -249,7 +252,6 @@ glm::mat4 Boid::getModel() const {
     glm::mat4 rotation = glm::eulerAngleYXZ(yaw, pitch, roll);
 
     glm::mat4 rotationFix = glm::rotate(model, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
-    rotationFix = glm::rotate(rotationFix, (p6::PI / -2.f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     // model = glm::rotate(model, pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // pitch y
 

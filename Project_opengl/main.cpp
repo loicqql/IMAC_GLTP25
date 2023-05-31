@@ -33,6 +33,7 @@
 
 int main() {
     auto ctx = p6::Context { { 1280, 720, "Project Ground" } };
+
     // ctx.maximize_window();
 
     std::random_device rd;
@@ -184,25 +185,61 @@ int main() {
     shaderGLTF.use();
     shaderGLTF.set("projection", projection);
 
+    float coeffSeparation = 1.f;
+    float coeffAlignment = 1.f;
+    float coeffCohesion = 1.f;
+    float distanceGui = 0.4f;
+
+    const char* choiceCamItems[] = { "Défaut", "Boid", "Satelite" };
+    int choiceCamItemCurrent = 0;
+    bool lodBoids = false;
+
+    ctx.imgui = [&]() {
+        // Show a simple window
+        ImGui::Begin("IHM");
+        ImGui::SliderFloat("Coeff separation", &coeffSeparation, 0.f, 5.f);
+        ImGui::SliderFloat("Coeff alignment", &coeffAlignment, 0.f, 5.f);
+        ImGui::SliderFloat("Coeff cohesion", &coeffCohesion, 0.f, 5.f);
+        ImGui::SliderFloat("Radius détection", &distanceGui, 0.1f, 1.f);
+        ImGui::ListBox("Choix de caméra", &choiceCamItemCurrent, choiceCamItems, IM_ARRAYSIZE(choiceCamItems));
+        ImGui::Checkbox("Low poly boids", &lodBoids);
+        ImGui::End();
+        // Show the official ImGui demo window
+        // It is very useful to discover all the widgets available in ImGui
+        ImGui::ShowDemoWindow();
+    };
+
     // Declare your infinite update loop.
     ctx.update = [&]() {
+        p6::ImageSize canvasSize = ctx.main_canvas_size();
+
+        if (choiceCamItemCurrent == 0) { // default
+            camera.update(ctx, boat.getPos(), boat.getRot());
+        } else if (choiceCamItemCurrent == 1) { // Boid
+            camera.update(ctx, boids[0].getPosition(), { 0, 0, 0 });
+        } else if (choiceCamItemCurrent == 2) { // Satelite
+            camera.update(ctx, { 0, 1.5, 0 }, { 0, 0, 0 });
+        }
+
         const glm::vec3 offsetCenterCamera = glm::vec3(0, 0.04, 0);
 
         moveWater += WAVE_SPEED * ctx.delta_time();
 
         boat.update(ctx);
 
-        if (ctx.key_is_pressed(GLFW_KEY_J)) {
+        if (ctx.key_is_pressed(GLFW_KEY_SPACE)) {
             ballon.setActive(boat.getPos());
         }
         ballon.update(ctx);
 
         setAllUniform("spotBoat.position", boat.getPosLight());
         setAllUniform("spotBoat.direction", boat.getDirection());
-        if (ballon.getActive()) {
+        if (ballon.getActive() && choiceCamItemCurrent == 0) {
             camera.update(ctx, ballon.getPosition(), { 0, 0, 0 });
-        } else {
-            camera.update(ctx, boat.getPos(), boat.getRot());
+        }
+
+        for (Boid& boid : boids) {
+            boid.update(boids, ballon, coeffSeparation, coeffAlignment, coeffCohesion, distanceGui);
         }
 
         glm::vec3 posCam = camera.getPos();
@@ -230,7 +267,7 @@ int main() {
         ballon.draw(shaderGLTF);
         shaderGLTF.set("projection", projection);
         for (Boid& boid : boids) {
-            boid.draw(shaderGLTF);
+            boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
 
         glm::mat4 DepthMVP = shadowProj * shadowView * model;
@@ -243,7 +280,7 @@ int main() {
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, 1280, 720);
+        glViewport(0, 0, canvasSize.width(), canvasSize.height());
 
         // ---------------------------------
         // RENDER REFLECTION TEXTURE
@@ -282,10 +319,11 @@ int main() {
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         for (Boid& boid : boids) {
-            boid.draw(shaderGLTF);
+            boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
 
         waterfbos.unbindCurrentFrameBuffer();
+        glViewport(0, 0, canvasSize.width(), canvasSize.height());
 
         view = glm::lookAt(posCam, camera.getTargetPos() + offsetCenterCamera, { 0, 1, 0 });
         setAllUniform("view", view);
@@ -317,10 +355,11 @@ int main() {
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         for (Boid& boid : boids) {
-            boid.draw(shaderGLTF);
+            boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
 
         waterfbos.unbindCurrentFrameBuffer();
+        glViewport(0, 0, canvasSize.width(), canvasSize.height());
 
         // ---------------------------------
         // RENDER TO SCREEN
@@ -348,8 +387,7 @@ int main() {
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         for (Boid& boid : boids) {
-            boid.update(boids, ballon);
-            boid.draw(shaderGLTF);
+            boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
     };
 
