@@ -10,6 +10,7 @@
 #include "glm/gtc/type_ptr.hpp"
 
 #include "glm/gtx/euler_angles.hpp"
+#include "glm/gtx/transform.hpp"
 
 //Contructors
 
@@ -20,13 +21,16 @@ Boid::Boid(glm::vec3 position, glm::vec3 velocity) {
 
     _boids.emplace_back(loaderGLTF("./assets/models/plane/plane.gltf", getModel()));
     _boids.emplace_back(loaderGLTF("./assets/models/plane/planeA.gltf", getModel()));
-    _boids[0].setModelMatrix(getModel());
-    _boids[1].setModelMatrix(getModel());
+
+    //helix
+    _boids.emplace_back(loaderGLTF("./assets/models/plane/helix.gltf", getModelHelix()));
 }
 
 //update && draw
 
-void Boid::update(std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui) {
+void Boid::update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui) {
+
+    helix += _velocity.length() * 3.0f * ctx.delta_time();
 
     float ratio_separation = 0.0008 * coeff_separation;
     float ratio_alignment = 0.0008 * coeff_alignment;
@@ -106,11 +110,15 @@ void Boid::update(std::vector<Boid>& boids, Ballon& ballon, float coeff_separati
 void Boid::draw(const p6::Shader& shader, int idMesh) {
     _boids[idMesh].setModelMatrix(getModel());
     _boids[idMesh].draw(shader);
+
+    _boids[2].setModelMatrix(getModelHelix());
+    _boids[2].draw(shader);
 }
 
 void Boid::setDepthMVP(const glm::mat4& proj, const glm::mat4& view) {
     _boids[0].setDepthMVP(proj, view);
     _boids[1].setDepthMVP(proj, view);
+    _boids[2].setDepthMVP(proj, view);
 }
 
 // rules
@@ -247,22 +255,26 @@ glm::mat4 Boid::getModel() const {
 
     glm::mat4 model = glm::mat4(1.0);
     glm::mat4 translation = glm::translate(model, glm::vec3(_position.x, _position.y, _position.z));
-    // glm::mat4 translation = glm::translate(model, glm::vec3(0, 0.5, 0));
 
     glm::mat4 rotation = glm::eulerAngleYXZ(yaw, pitch, roll);
 
     glm::mat4 rotationFix = glm::rotate(model, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
 
-    // model = glm::rotate(model, pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // pitch y
-
-    // model = glm::rotate(model, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f)); // rot model
-
-    // model = glm::rotate(model, (p6::PI / -2.f), glm::vec3(0.0f, 1.0f, 0.0f)); // fix direction
-    // model = glm::rotate(model, deg, glm::vec3(0.0f, 1.0f, 0.0f)); // direction x, z
-
     glm::mat4 scale = glm::scale(model, glm::vec3(0.010)); // final scale
 
     return translation * rotationFix * rotation * scale;
+}
+
+glm::mat4 Boid::getModelHelix() {
+
+    glm::mat4 model = glm::mat4(1.0);
+    model = glm::translate(model, glm::vec3(4.7f, -0.9f, 0.0f));
+    model = glm::rotate(model, helix, glm::vec3(1.f, 0.f, 0.f));
+    model = glm::rotate(model, p6::PI, glm::vec3(0.f, 1.f, 0.f));
+
+    glm::mat4 modelPlane = getModel();
+
+    return modelPlane * model;
 }
 
 bool Boid::outOfBounds() const {

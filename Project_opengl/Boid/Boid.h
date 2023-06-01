@@ -16,6 +16,8 @@ private:
 
     float roll = 0.0f;
 
+    float helix = 0.0f;
+
     const float MAX_X = 1;
     const float MIN_X = -1;
     const float MAX_Z = 1;
@@ -26,7 +28,7 @@ private:
 public:
     Boid(glm::vec3 position, glm::vec3 velocity);
 
-    void update(std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui);
+    void update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, float coeff_separation, float coeff_alignment, float coeff_cohesion, float distance_gui);
     void draw(const p6::Shader& shader, int idMesh);
     void setDepthMVP(const glm::mat4& proj, const glm::mat4& view);
 
@@ -41,5 +43,6 @@ public:
 
 private:
     glm::mat4 getModel() const;
+    glm::mat4 getModelHelix();
     bool outOfBounds() const;
 };

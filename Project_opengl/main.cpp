@@ -10,6 +10,7 @@
 #include "./utils.h"
 
 #include <cmath>
+#include <imgui.h>
 
 #include "glm/gtx/transform.hpp"
 #include "p6/p6.h"
@@ -128,15 +129,12 @@ int main() {
     // glBlendColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     glm::vec3 sunPosition = { -0.5, 0.5, -0.5 };
+    glm::vec3 sunColor = { 1.0, 1.0, 1.0 };
 
-    setAllUniform("sun.position", sunPosition);
-    setAllUniform("sun.color", glm::vec3(1.0, 1.0, 1.0));
-
-    setAllUniform("spotBoat.color", glm::vec3(1.0, 1.0, 0.90));
-    setAllUniform("spotBoat.strength", 0.8f);
-    setAllUniform("spotBoat.direction", glm::vec3(0.0, 0.0, 1.0));
-    setAllUniform("spotBoat.cutOff", 0.99f);
-    setAllUniform("spotBoat.outerCutOff", 0.90f);
+    glm::vec3 spotBoatColor = { 1.0, 1.0, 0.90 };
+    float spotBoatStrength = 0.8f;
+    float spotBoatCutOff = 0.99f;
+    float spotBoatOuterCutOff = 0.90f;
 
     GLuint textureUnit = 0;
 
@@ -190,27 +188,69 @@ int main() {
     float coeffCohesion = 1.f;
     float distanceGui = 0.4f;
 
-    const char* choiceCamItems[] = { "Défaut", "Boid", "Satelite" };
+    const char* choiceCamItems[] = { "Default", "Boid", "Top" };
     int choiceCamItemCurrent = 0;
     bool lodBoids = false;
 
     ctx.imgui = [&]() {
         // Show a simple window
         ImGui::Begin("IHM");
-        ImGui::SliderFloat("Coeff separation", &coeffSeparation, 0.f, 5.f);
-        ImGui::SliderFloat("Coeff alignment", &coeffAlignment, 0.f, 5.f);
-        ImGui::SliderFloat("Coeff cohesion", &coeffCohesion, 0.f, 5.f);
-        ImGui::SliderFloat("Radius détection", &distanceGui, 0.1f, 1.f);
-        ImGui::ListBox("Choix de caméra", &choiceCamItemCurrent, choiceCamItems, IM_ARRAYSIZE(choiceCamItems));
-        ImGui::Checkbox("Low poly boids", &lodBoids);
+
+        ImGui::ListBox("Camera", &choiceCamItemCurrent, choiceCamItems, IM_ARRAYSIZE(choiceCamItems));
+
+        if (ImGui::CollapsingHeader("Boids")) {
+            ImGui::SliderFloat("Separation", &coeffSeparation, 0.f, 5.f);
+            ImGui::SliderFloat("Alignment", &coeffAlignment, 0.f, 5.f);
+            ImGui::SliderFloat("Cohesion", &coeffCohesion, 0.f, 5.f);
+            ImGui::SliderFloat("Detection range", &distanceGui, 0.1f, 1.f);
+            ImGui::Checkbox("Low poly boids", &lodBoids);
+
+            if (ImGui::Button("Reset boids")) {
+                coeffSeparation = 1.f;
+                coeffAlignment = 1.f;
+                coeffCohesion = 1.f;
+            }
+        }
+
+        if (ImGui::CollapsingHeader("Sun")) {
+            ImGui::SliderFloat3("SunPosition", (float*)&sunPosition, -0.5f, 0.5f);
+            ImGui::SliderFloat3("SunColor", (float*)&sunColor, 0.0f, 1.0f);
+
+            if (ImGui::Button("Reset sun")) {
+                sunPosition = { -0.5, 0.5, -0.5 };
+                sunColor = { 1.0, 1.0, 1.0 };
+            }
+        }
+
+        if (ImGui::CollapsingHeader("SpotBoat")) {
+            ImGui::SliderFloat3("SpotColor", (float*)&spotBoatColor, 0.0f, 1.0f);
+            ImGui::SliderFloat("SpotStrength", &spotBoatStrength, 0.f, 1.f);
+            ImGui::SliderFloat("SpotCutOff", &spotBoatCutOff, 0.f, 1.f);
+            ImGui::SliderFloat("SpotOuterCutOff", &spotBoatOuterCutOff, 0.f, 1.f);
+
+            if (ImGui::Button("Reset spot")) {
+                spotBoatColor = { 1.0, 1.0, 0.90 };
+                spotBoatStrength = 0.8f;
+                spotBoatCutOff = 0.99f;
+                spotBoatOuterCutOff = 0.90f;
+            }
+        }
         ImGui::End();
-        // Show the official ImGui demo window
-        // It is very useful to discover all the widgets available in ImGui
-        ImGui::ShowDemoWindow();
     };
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
+        //GUI
+
+        setAllUniform("sun.position", sunPosition);
+        setAllUniform("sun.color", sunColor);
+
+        setAllUniform("spotBoat.color", spotBoatColor);
+        setAllUniform("spotBoat.strength", spotBoatStrength);
+        setAllUniform("spotBoat.direction", glm::vec3(0.0, 0.0, 1.0));
+        setAllUniform("spotBoat.cutOff", spotBoatCutOff);
+        setAllUniform("spotBoat.outerCutOff", spotBoatOuterCutOff);
+
         p6::ImageSize canvasSize = ctx.main_canvas_size();
 
         if (choiceCamItemCurrent == 0) { // default
@@ -239,7 +279,7 @@ int main() {
         }
 
         for (Boid& boid : boids) {
-            boid.update(boids, ballon, coeffSeparation, coeffAlignment, coeffCohesion, distanceGui);
+            boid.update(ctx, boids, ballon, coeffSeparation, coeffAlignment, coeffCohesion, distanceGui);
         }
 
         glm::vec3 posCam = camera.getPos();
