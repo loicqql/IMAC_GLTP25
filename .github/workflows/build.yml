@@ -7,7 +7,7 @@ env:
 
 jobs:
   Windows_MSVC_Debug:
-    name: Windows MSVC Release
+    name: Windows Clang Release
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v3
@@ -15,7 +15,7 @@ jobs:
         submodules: recursive
 
     - name: Configure CMake
-      run: cmake .\ -B ${{github.workspace}}\build -D CMAKE_C_COMPILER=cl -D CMAKE_CXX_COMPILER=cl
+      run: cmake .\ -B ${{github.workspace}}\build -T ClangCL
 
     - name: Build
       run: cmake --build ${{github.workspace}}\build --config Release --target ${{env.TARGET}}_exe
