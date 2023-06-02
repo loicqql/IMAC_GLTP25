@@ -142,8 +142,8 @@ int main() {
     shaderWater.use();
     bindTexture(shaderWater, waterfbos.getReflectionTexture(), "reflectionTexture", textureUnit);
     bindTexture(shaderWater, waterfbos.getRefractionTexture(), "refractionTexture", textureUnit);
-    loadAndBindTexture(shaderWater, "assets/waterDUDV.png", "dudvMap", textureUnit);
-    loadAndBindTexture(shaderWater, "assets/waterNormalMap.png", "normalMap", textureUnit);
+    loadAndBindTexture(shaderWater, "assets/textures/waterDUDV.png", "dudvMap", textureUnit);
+    loadAndBindTexture(shaderWater, "assets/textures/waterNormalMap.png", "normalMap", textureUnit);
 
     shaderOr.use();
     loadAndBindTexture(shaderOr, "assets/textures/or1grain.png", "or1", textureUnit);
@@ -165,12 +165,12 @@ int main() {
     bindTexture(shaderGLTF, shadowMap.getShadowTexture(), "gShadowMap", textureUnit);
 
     shaderSkybox.use();
-    std::vector<std::filesystem::path> faces = { "assets/cubemap/right.png",
-                                                 "assets/cubemap/left.png",
-                                                 "assets/cubemap/top.png",
-                                                 "assets/cubemap/bottom.png",
-                                                 "assets/cubemap/back.png",
-                                                 "assets/cubemap/front.png" };
+    std::vector<std::filesystem::path> faces = { "assets/textures/right.png",
+                                                 "assets/textures/left.png",
+                                                 "assets/textures/top.png",
+                                                 "assets/textures/bottom.png",
+                                                 "assets/textures/back.png",
+                                                 "assets/textures/front.png" };
 
     loadAndBindCubemap(shaderSkybox, faces, "skybox", textureUnit);
 
