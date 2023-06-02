@@ -8,20 +8,20 @@ inline void initSkybox(OpenGlWrapper& cube) {
 
     int indice = 0;
 
-    float cube_height2 = 10.0;
+    float cube_height2 = 50.0;
     float z = 0.05;
 
     //top
-    cube._vertices.push_back(Vertex3D { { -10.0, 10.0, z + cube_height2 }, { 0.1, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { 10.0, 10.0, z + cube_height2 }, { 0.1, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { 10.0, -10.0, z + cube_height2 }, { 0.1, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { -10.0, -10.0, z + cube_height2 }, { 0.1, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { -50.0, 50.0, z + cube_height2 }, { 0.1, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { 50.0, 50.0, z + cube_height2 }, { 0.1, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { 50.0, -50.0, z + cube_height2 }, { 0.1, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { -50.0, -50.0, z + cube_height2 }, { 0.1, 0, 0 } });
 
     //bottom
-    cube._vertices.push_back(Vertex3D { { -10.0, 10.0, z - cube_height2 }, { 0.2, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { 10.0, 10.0, z - cube_height2 }, { 0.2, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { 10.0, -10.0, z - cube_height2 }, { 0.2, 0, 0 } });
-    cube._vertices.push_back(Vertex3D { { -10.0, -10.0, z - cube_height2 }, { 0.2, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { -50.0, 50.0, z - cube_height2 }, { 0.2, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { 50.0, 50.0, z - cube_height2 }, { 0.2, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { 50.0, -50.0, z - cube_height2 }, { 0.2, 0, 0 } });
+    cube._vertices.push_back(Vertex3D { { -50.0, -50.0, z - cube_height2 }, { 0.2, 0, 0 } });
 
     //top
     cube._indices.push_back(indice + 5);
