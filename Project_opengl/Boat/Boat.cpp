@@ -5,17 +5,15 @@
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/trigonometric.hpp"
+#include <cmath>
 #include <iostream>
 
 Boat::Boat() {
 
-    _position = { 0, 0, 0 };
-    // _position = {-1, 0, -1};
-    _rotation = { 0, 0, 0 };
+    _position = { -.06, 0, -.06 };
+    _rotation = { 0, -0.2, 0 };
 
-    // main.load("./assets/models/boat/boat.gltf");
-    // rouge.load("./assets/models/boat/rouge.gltf");
-    // bleu.load("./assets/models/boat/bleu.gltf");
+    objs.emplace_back(loaderGLTF("./assets/models/boat/boat.gltf", getModel()));
 }
 
 void Boat::update(p6::Context& ctx) {
@@ -27,16 +25,18 @@ void Boat::update(p6::Context& ctx) {
 
     bool leftIsPressed = ctx.key_is_pressed(GLFW_KEY_A);
     bool rightIsPressed = ctx.key_is_pressed(GLFW_KEY_D);
+    bool pushIsPressed = ctx.key_is_pressed(GLFW_KEY_W);
 
-    if (leftIsPressed && rightIsPressed) {
+    if ((leftIsPressed && rightIsPressed) || pushIsPressed) {
         speed += 0.003 * ctx.delta_time();
         rotRouge += coeffRot;
         rotBleu += coeffRot;
-    } else if (leftIsPressed) {
+    }
+    if (rightIsPressed) {
         _rotation.y += forceRot;
         rotRouge += coeffRot;
         speed -= 0.0003 * ctx.delta_time();
-    } else if (rightIsPressed) {
+    } else if (leftIsPressed) {
         _rotation.y -= forceRot;
         rotBleu += coeffRot;
         speed -= 0.0003 * ctx.delta_time();
@@ -63,23 +63,12 @@ void Boat::update(p6::Context& ctx) {
 }
 
 void Boat::draw(const p6::Shader& shader) {
+    objs[0].setModelMatrix(getModel());
+    objs[0].draw(shader);
+}
 
-    glm::mat4 base = glm::mat4(1.0);
-
-    base = glm::translate(base, glm::vec3(_position.x, 0.0, _position.z));
-    base = glm::rotate(base, -_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-    base = glm::rotate(base, p6::PI / 2.f, glm::vec3(0.0f, 1.0f, 0.0f));
-    base = glm::scale(base, glm::vec3(0.03)); // final scale
-    // base = glm::translate(base, glm::vec3(0.0, 1.0, 0.0)); // fix final z
-
-    // shader.set("model", base);
-    // main.draw();
-
-    // shader.set("model", base);
-    // rouge.draw();
-
-    // shader.set("model", base);
-    // bleu.draw();
+void Boat::setDepthMVP(const glm::mat4& proj, const glm::mat4& view) {
+    objs[0].setDepthMVP(proj, view);
 }
 
 void Boat::pitchEffect(p6::Context& ctx) {
@@ -101,9 +90,22 @@ void Boat::pitchEffect(p6::Context& ctx) {
 }
 
 glm::vec3 Boat::getPosLight() {
-    return glm::vec3(_position.x, 0.05, _position.z);
+    float distance = 0.13f;
+    return glm::vec3(_position.x - (glm::cos(_rotation.y) * distance), 0.05, _position.z - (glm::sin(_rotation.y) * distance));
 }
 
 glm::vec3 Boat::getDirection() {
     return glm::vec3(glm::cos(_rotation.y), glm::sin(_rotation.x), glm::sin(_rotation.y));
+}
+
+glm::mat4 Boat::getModel() const {
+
+    glm::mat4 model = glm::mat4(1.0);
+    model = glm::translate(model, glm::vec3(_position.x, _position.y, _position.z));
+    model = glm::rotate(model, p6::PI, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, (-_rotation.x / 2.0f), glm::vec3(glm::sin(_rotation.y) + glm::cos(_rotation.y) / 2, 0.0f, glm::cos(_rotation.y) + glm::sin(_rotation.y) / 2));
+    model = glm::rotate(model, _rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.010)); // final scale
+
+    return model;
 }

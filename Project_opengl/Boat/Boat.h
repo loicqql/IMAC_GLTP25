@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../bezier.h"
+#include "../loaderGLTF/loaderGLTF.h"
 #include "glm/fwd.hpp"
 #include "p6/p6.h"
 
@@ -9,9 +10,7 @@ private:
     glm::vec3 _position {};
     glm::vec3 _rotation {};
 
-    // loaderGLTF main;
-    // loaderGLTF rouge;
-    // loaderGLTF bleu;
+    std::vector<loaderGLTF> objs; // ?
 
     float width = 0.02;
     float speed = 0.0;
@@ -31,6 +30,8 @@ public:
 
     inline glm::vec3 getPos() { return _position; }
 
+    void setDepthMVP(const glm::mat4& proj, const glm::mat4& view);
+
     glm::vec3 getPosLight();
     glm::vec3 getDirection();
 
@@ -38,4 +39,5 @@ public:
 
 private:
     void pitchEffect(p6::Context& ctx);
+    glm::mat4 getModel() const;
 };

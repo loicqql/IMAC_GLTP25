@@ -33,6 +33,7 @@
 //https://opengl.developpez.com/tutoriels/apprendre-opengl/?page=systemes-de-coordonnees
 
 int main() {
+
     auto ctx = p6::Context { { 1280, 720, "Project Ground" } };
 
     // ctx.maximize_window();
@@ -303,6 +304,7 @@ int main() {
         shaderGLTF.use();
         shaderGLTF.set("projection", shadowProj);
         shaderGLTF.set("view", shadowView);
+        boat.draw(shaderGLTF);
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
         shaderGLTF.set("projection", projection);
@@ -315,6 +317,7 @@ int main() {
         setAllUniform("DepthMVP", DepthMVP);
         castleCentre.setDepthMVP(shadowProj, shadowView);
         ballon.setDepthMVP(shadowProj, shadowView);
+        boat.setDepthMVP(shadowProj, shadowView);
         for (Boid& boid : boids) {
             boid.setDepthMVP(shadowProj, shadowView);
         }
@@ -350,14 +353,10 @@ int main() {
         shaderSkybox.set("plane", glm::vec4(0, 0, -1, OCEAN_HEIGHT));
         skybox.draw();
 
-        /*
-        shaderCube.use();
-        boat.draw(shaderCube); // test w/ final model
-        */
-
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
+        // boat.draw(shaderGLTF);
         for (Boid& boid : boids) {
             boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
@@ -388,12 +387,10 @@ int main() {
         shaderSkybox.set("plane", glm::vec4(0, 0, 1, OCEAN_HEIGHT));
         skybox.draw();
 
-        shaderCube.use();
-        boat.draw(shaderCube);
-
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
+        boat.draw(shaderGLTF);
         for (Boid& boid : boids) {
             boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
@@ -426,6 +423,7 @@ int main() {
         shaderGLTF.use();
         castleCentre.draw(shaderGLTF);
         ballon.draw(shaderGLTF);
+        boat.draw(shaderGLTF);
         for (Boid& boid : boids) {
             boid.draw(shaderGLTF, lodBoids ? 1 : 0);
         }
