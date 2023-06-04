@@ -188,7 +188,7 @@ int main() {
     float coeffAlignment = 1.f;
     float coeffCohesion = 1.f;
     float distanceGui = 0.4f;
-    float maxSpeedBoid = 200.f;
+    float maxSpeedBoid = 25.f;
 
     const char* choiceCamItems[] = { "Default", "Boid", "Top" };
     int choiceCamItemCurrent = 0;
@@ -205,14 +205,14 @@ int main() {
             ImGui::SliderFloat("Alignment", &coeffAlignment, 0.f, 5.f);
             ImGui::SliderFloat("Cohesion", &coeffCohesion, 0.f, 5.f);
             ImGui::SliderFloat("Detection range", &distanceGui, 0.1f, 1.f);
-            ImGui::SliderFloat("Speed", &maxSpeedBoid, 0.f, 2000.f);
+            ImGui::SliderFloat("Max speed", &maxSpeedBoid, 0.f, 1000.f);
             ImGui::Checkbox("Low poly boids", &lodBoids);
 
             if (ImGui::Button("Reset boids")) {
                 coeffSeparation = 1.f;
                 coeffAlignment = 1.f;
                 coeffCohesion = 1.f;
-                maxSpeedBoid = 200.f;
+                maxSpeedBoid = 25.f;
             }
         }
 
