@@ -1,5 +1,4 @@
 #include "Texture.h"
-#include <iostream>
 
 Texture::Texture(const char* image, const char* texType) {
     type = texType;

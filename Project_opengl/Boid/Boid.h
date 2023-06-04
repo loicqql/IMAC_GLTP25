@@ -25,6 +25,8 @@ private:
     const float MAX_Y = 1.5;
     const float MIN_Y = 0.5;
 
+    float coeffTime = 200.f;
+
 public:
     Boid(glm::vec3 position, glm::vec3 velocity);
 
@@ -33,13 +35,15 @@ public:
     void setDepthMVP(const glm::mat4& proj, const glm::mat4& view);
 
     // Rules
-    glm::vec3 seek(Ballon& ballon);
-    glm::vec3 separation(std::vector<Boid>& boids, float distance_gui);
-    glm::vec3 alignment(std::vector<Boid>& boids, float distance_gui);
-    glm::vec3 cohesion(std::vector<Boid>& boids, float distance_gui);
-    glm::vec3 returnToCenter();
+    glm::vec3 seek(Ballon& ballon, p6::Context& ctx);
+    glm::vec3 separation(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx);
+    glm::vec3 alignment(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx);
+    glm::vec3 cohesion(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx);
+    glm::vec3 returnToCenter(p6::Context& ctx);
 
     inline glm::vec3 getPosition() { return _position; };
+
+    inline void setMaxSpeed(float& masSpeed) { coeffTime = masSpeed; };
 
 private:
     glm::mat4 getModel() const;

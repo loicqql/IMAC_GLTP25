@@ -41,7 +41,7 @@ void Boid::update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, fl
     float direction = std::atan2(_velocity.z, _velocity.x);
 
     if (outOfBounds()) {
-        glm::vec3 returnToCenter_force = returnToCenter();
+        glm::vec3 returnToCenter_force = returnToCenter(ctx);
         returnToCenter_force *= ratio_returnToCenter;
         if (_position.y < 0) {
             returnToCenter_force *= 50.f;
@@ -50,19 +50,19 @@ void Boid::update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, fl
             _acceleration += returnToCenter_force;
         }
     } else {
-        glm::vec3 separation_force = separation(boids, distance_gui);
+        glm::vec3 separation_force = separation(boids, distance_gui, ctx);
         separation_force *= ratio_separation;
         if (vec3_isnan(separation_force)) {
             _acceleration += separation_force;
         }
 
-        glm::vec3 alignment_force = alignment(boids, distance_gui);
+        glm::vec3 alignment_force = alignment(boids, distance_gui, ctx);
         alignment_force *= ratio_alignment;
         if (vec3_isnan(alignment_force)) {
             _acceleration += alignment_force;
         }
 
-        glm::vec3 cohesion_force = cohesion(boids, distance_gui);
+        glm::vec3 cohesion_force = cohesion(boids, distance_gui, ctx);
         cohesion_force *= ratio_cohesion;
         if (vec3_isnan(cohesion_force)) {
             _acceleration += cohesion_force;
@@ -70,7 +70,7 @@ void Boid::update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, fl
     }
 
     if (ballon.getActive()) {
-        glm::vec3 seek_force = seek(ballon);
+        glm::vec3 seek_force = seek(ballon, ctx);
         seek_force *= ratio_seek;
         if (vec3_isnan(seek_force)) {
             _acceleration += seek_force;
@@ -78,7 +78,7 @@ void Boid::update(p6::Context& ctx, std::vector<Boid>& boids, Ballon& ballon, fl
     }
 
     _velocity += _acceleration;
-    vec3_limit(_velocity, glm::vec3(0.01, 0.01, 0.01));
+    vec3_limit(_velocity, glm::vec3 { 0.01f * (ctx.delta_time() * coeffTime) });
     _position += _velocity;
 
     // float rollX = _acceleration.x * 500.f;
@@ -123,7 +123,7 @@ void Boid::setDepthMVP(const glm::mat4& proj, const glm::mat4& view) {
 
 // rules
 
-glm::vec3 Boid::seek(Ballon& ballon) {
+glm::vec3 Boid::seek(Ballon& ballon, p6::Context& ctx) {
 
     glm::vec3 force { 0 };
     glm::vec3 positionBallon = ballon.getPosition();
@@ -141,13 +141,13 @@ glm::vec3 Boid::seek(Ballon& ballon) {
 
         force -= _velocity;
 
-        vec3_limit(force, glm::vec3 { 0.05 });
+        vec3_limit(force, glm::vec3 { 0.05f * (ctx.delta_time() * coeffTime) });
     }
 
     return force;
 }
 
-glm::vec3 Boid::separation(std::vector<Boid>& boids, float distance_gui) {
+glm::vec3 Boid::separation(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx) {
 
     auto totalForce = glm::vec3(0);
 
@@ -164,12 +164,12 @@ glm::vec3 Boid::separation(std::vector<Boid>& boids, float distance_gui) {
 
     totalForce -= _velocity;
 
-    vec3_limit(totalForce, glm::vec3 { 0.05 });
+    vec3_limit(totalForce, glm::vec3 { 0.05f * (ctx.delta_time() * coeffTime) });
 
     return totalForce;
 }
 
-glm::vec3 Boid::alignment(std::vector<Boid>& boids, float distance_gui) {
+glm::vec3 Boid::alignment(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx) {
 
     auto totalForce = glm::vec3(0);
 
@@ -189,12 +189,12 @@ glm::vec3 Boid::alignment(std::vector<Boid>& boids, float distance_gui) {
 
     totalForce -= _velocity;
 
-    vec3_limit(totalForce, glm::vec3 { 0.05 });
+    vec3_limit(totalForce, glm::vec3 { 0.05f * (ctx.delta_time() * coeffTime) });
 
     return totalForce;
 }
 
-glm::vec3 Boid::cohesion(std::vector<Boid>& boids, float distance_gui) {
+glm::vec3 Boid::cohesion(std::vector<Boid>& boids, float distance_gui, p6::Context& ctx) {
 
     auto totalForce = glm::vec3(0);
 
@@ -214,12 +214,12 @@ glm::vec3 Boid::cohesion(std::vector<Boid>& boids, float distance_gui) {
 
     totalForce -= _velocity;
 
-    vec3_limit(totalForce, glm::vec3 { 0.05 });
+    vec3_limit(totalForce, glm::vec3 { 0.05f * (ctx.delta_time() * coeffTime) });
 
     return totalForce;
 }
 
-glm::vec3 Boid::returnToCenter() { // seek with no distance
+glm::vec3 Boid::returnToCenter(p6::Context& ctx) { // seek with no distance
 
     glm::vec3 force { 0 };
 
@@ -243,7 +243,7 @@ glm::vec3 Boid::returnToCenter() { // seek with no distance
 
     force -= _velocity;
 
-    vec3_limit(force, glm::vec3 { 0.05 });
+    vec3_limit(force, glm::vec3 { 0.05f * (ctx.delta_time() * coeffTime) });
 
     return force;
 }

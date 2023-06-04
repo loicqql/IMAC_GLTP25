@@ -6,7 +6,6 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/trigonometric.hpp"
 #include <cmath>
-#include <iostream>
 
 Boat::Boat() {
 

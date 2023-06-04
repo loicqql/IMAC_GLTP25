@@ -67,9 +67,9 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CLIP_DISTANCE0);
 
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);
-    // glFrontFace(GL_CW);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
 
     const p6::Shader shaderOr = p6::load_shader(
         "shaders/terrain.vs.glsl",
@@ -188,6 +188,7 @@ int main() {
     float coeffAlignment = 1.f;
     float coeffCohesion = 1.f;
     float distanceGui = 0.4f;
+    float maxSpeedBoid = 200.f;
 
     const char* choiceCamItems[] = { "Default", "Boid", "Top" };
     int choiceCamItemCurrent = 0;
@@ -204,12 +205,14 @@ int main() {
             ImGui::SliderFloat("Alignment", &coeffAlignment, 0.f, 5.f);
             ImGui::SliderFloat("Cohesion", &coeffCohesion, 0.f, 5.f);
             ImGui::SliderFloat("Detection range", &distanceGui, 0.1f, 1.f);
+            ImGui::SliderFloat("Speed", &maxSpeedBoid, 0.f, 2000.f);
             ImGui::Checkbox("Low poly boids", &lodBoids);
 
             if (ImGui::Button("Reset boids")) {
                 coeffSeparation = 1.f;
                 coeffAlignment = 1.f;
                 coeffCohesion = 1.f;
+                maxSpeedBoid = 200.f;
             }
         }
 
@@ -280,6 +283,7 @@ int main() {
         }
 
         for (Boid& boid : boids) {
+            boid.setMaxSpeed(maxSpeedBoid);
             boid.update(ctx, boids, ballon, coeffSeparation, coeffAlignment, coeffCohesion, distanceGui);
         }
 
