@@ -67,9 +67,9 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CLIP_DISTANCE0);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    glFrontFace(GL_CW);
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_FRONT);
+    // glFrontFace(GL_CW);
 
     const p6::Shader shaderOr = p6::load_shader(
         "shaders/terrain.vs.glsl",

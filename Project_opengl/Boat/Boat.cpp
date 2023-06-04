@@ -59,7 +59,13 @@ void Boat::update(p6::Context& ctx) {
 
     pitchEffect(ctx);
 
-    this->_position = { glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z };
+    glm::vec3 pos = _position;
+
+    _position = { glm::cos(_rotation.y) * (speed * -1.0f) + _position.x, 0, glm::sin(_rotation.y) * (speed * -1.0f) + _position.z };
+
+    if (_position.x > 0.95f || _position.x < -0.95f || _position.z > 0.95f || _position.z < -0.95f) {
+        _position = pos;
+    }
 }
 
 void Boat::draw(const p6::Shader& shader) {
